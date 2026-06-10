@@ -1,0 +1,712 @@
+{
+  "project": {
+    "title": "Signals of Compute Power",
+    "subtitle": "An interactive signaling game of U.S.-China compute governance and Vietnam's policy path",
+    "purpose": "Adapt a Nicky Case-style explorable explanation to teach how compute governance policies function as costly signals under uncertainty.",
+    "core_learning_goal": "Let the player discover that compute governance is a belief-updating game: a signal can be credible, but if China's posterior belief crosses its adaptation threshold, credibility can accelerate adaptation rather than produce waiting.",
+    "source_basis": "Based on the user's thesis model: U.S. as sender, China as receiver, Vietnam as downstream observer.",
+    "version": "2.0-round-based-simulation",
+    "recommended_file_path": "src/data/signalingGameSpec.json"
+  },
+  "agent_brief": {
+    "task": "Use this spec as the source of truth for a Nicky Case-style explorable explanation. Build a round-based signaling simulation where the user plays the U.S. sender, China updates beliefs, China adapts or waits based on an adaptation threshold, and Vietnam receives downstream implications.",
+    "implementation_priority": [
+      "Implement the simulation round loop before polishing animations.",
+      "Keep all text, numbers, and signal definitions in this JSON/config object so the thesis author can edit copy without touching game logic.",
+      "Treat China as a receiver with an adaptation threshold, not as a hidden type.",
+      "Treat Vietnam as a downstream audience panel, not a formal player.",
+      "Use playful Nicky Case-style explanations: click, animate, reveal, compare.",
+      "Do not frame outcomes as U.S. win / China lose. Classify credibility, adaptation, and Vietnam's policy lesson separately.",
+      "Put equations and payoff notation behind an Advanced Mode toggle."
+    ],
+    "likely_repo_files_to_inspect": [
+      "index.html",
+      "css/style.css",
+      "style.css",
+      "js/main.js",
+      "js/slides.js",
+      "js/interaction.js",
+      "assets/"
+    ],
+    "deliverables": [
+      "Interactive explorable page",
+      "Clickable U.S. signal cards",
+      "Belief update visualization",
+      "China response choice",
+      "Equilibrium/outcome classifier",
+      "Vietnam downstream implication panel",
+      "Advanced mode with equations",
+      "Reset and randomize buttons"
+    ]
+  },
+  "game_model": {
+    "players": {
+      "US": {
+        "role": "Sender",
+        "description": "Chooses the initial compute governance signal after observing its own hidden type.",
+        "hidden_type": {
+          "symbol": "theta",
+          "values": {
+            "H": "High Resolve",
+            "L": "Low Resolve"
+          },
+          "teaching_copy": {
+            "H": "A High Resolve United States is willing to sustain significant economic, diplomatic, and administrative costs to preserve technological advantage.",
+            "L": "A Low Resolve United States prefers lower-cost or more temporary restrictions."
+          }
+        }
+      },
+      "China": {
+        "role": "Receiver",
+        "description": "Receiver. China has no hidden type in the simplified simulation. It observes the U.S. signal, updates belief about U.S. resolve, then chooses Adapt or Wait by comparing posterior belief to an adaptation threshold.",
+        "responses": {
+          "A": {
+            "label": "Adapt",
+            "description": "Domestic substitution, sovereign compute expansion, efficiency gains, or alternative procurement."
+          },
+          "W": {
+            "label": "Wait",
+            "description": "Delay adjustment while observing whether U.S. policy persists, enforcement tightens, or loopholes remain available."
+          }
+        },
+        "adaptation_threshold_copy": "China adapts when belief in durable U.S. resolve is high enough, adaptation is feasible enough, or waiting becomes too risky."
+      },
+      "Vietnam": {
+        "role": "Downstream audience",
+        "description": "Not a formal player in the two-player model. Vietnam observes U.S.-China signals and receives policy implications for autonomy, procurement, standards, and governance capacity."
+      }
+    },
+    "signals": {
+      "E": {
+        "label": "Export Controls",
+        "short_label": "Controls",
+        "cost_level": "High",
+        "visibility": "High",
+        "reversibility": "Low to moderate",
+        "type_gap": "Largest",
+        "dominant_cost_mechanism": [
+          "Sunk cost",
+          "Tying hands"
+        ],
+        "description": "Restricts advanced AI chips, semiconductor equipment, and related technologies.",
+        "belief_effect": "Strong upward update that the U.S. is High Resolve.",
+        "risk": "May provoke faster Chinese adaptation if the signal looks durable.",
+        "ui_copy": "A costly and visible restriction. Harder for Low Resolve types to imitate."
+      },
+      "T": {
+        "label": "Training Compute Thresholds",
+        "short_label": "Thresholds",
+        "cost_level": "Low to moderate",
+        "visibility": "Medium",
+        "reversibility": "Moderate",
+        "type_gap": "Smallest",
+        "dominant_cost_mechanism": [
+          "Tying hands",
+          "Recalibration cost"
+        ],
+        "description": "Creates measurable compute triggers for reporting, evaluation, or oversight.",
+        "belief_effect": "Weak to moderate update. Both High and Low Resolve types can announce thresholds.",
+        "risk": "May become a pooling signal if it is easy to announce but weakly enforced.",
+        "ui_copy": "A measurable benchmark, but easier for both types to adopt."
+      },
+      "K": {
+        "label": "Provider Oversight",
+        "short_label": "Oversight",
+        "cost_level": "Moderate",
+        "visibility": "Medium",
+        "reversibility": "Moderate",
+        "type_gap": "Intermediate",
+        "dominant_cost_mechanism": [
+          "Installment cost",
+          "Reducible cost"
+        ],
+        "description": "Applies KYC, audits, cloud enforcement, and data-center monitoring to compute providers.",
+        "belief_effect": "Moderate update at first. Credibility grows if enforcement persists over time.",
+        "risk": "May look weak initially unless repeated compliance and enforcement are visible.",
+        "ui_copy": "An institutional signal whose credibility accumulates through repeated enforcement."
+      }
+    },
+    "cost_ordering": {
+      "formula": "c_theta(E) > c_theta(K) > c_theta(T)",
+      "type_gap_formula": "c_L(E)-c_H(E) > c_L(K)-c_H(K) > c_L(T)-c_H(T)",
+      "plain_language": "Export controls are generally costliest, provider oversight is intermediate, and thresholds are lower cost. Export controls also create the largest difference between High and Low Resolve types."
+    },
+    "belief_update": {
+      "posterior_symbol": "mu(H|s)",
+      "bayes_formula": "mu(H|s) = [Pr(s|H) * p] / [Pr(s|H) * p + Pr(s|L) * (1-p)]",
+      "plain_language": "China updates its belief that the U.S. is High Resolve after seeing the signal.",
+      "teaching_behavior": {
+        "E": "Move belief upward strongly.",
+        "K": "Move belief upward moderately, with stronger movement if enforcement persistence is high.",
+        "T": "Keep belief near the prior unless threshold durability is high."
+      }
+    },
+    "adaptation_threshold": {
+      "condition": "China adapts if mu(H|s) >= mu_star",
+      "advanced_formula": "mu_star_s = (q_s + l_s) / (g_s + d_s + l_s)",
+      "variables": {
+        "q_s": "Cost of adaptation after signal s",
+        "g_s": "Benefit from adapting if the U.S. is High Resolve",
+        "d_s": "Vulnerability cost of waiting if the U.S. is High Resolve",
+        "l_s": "Option value of waiting if the U.S. is Low Resolve"
+      },
+      "plain_language": "China adapts when belief in durable U.S. resolve is high enough, adaptation is affordable enough, or waiting becomes too risky."
+    }
+  },
+  "interactive_flow": [
+    {
+      "step_id": "intro",
+      "title": "The puzzle",
+      "screen_goal": "Introduce the problem of hidden resolve.",
+      "user_action": "Click Start",
+      "narration": "China cannot directly observe whether U.S. compute restrictions are durable resolve or temporary signaling. It must infer resolve from costly policy choices."
+    },
+    {
+      "step_id": "nature",
+      "title": "Nature assigns U.S. type",
+      "screen_goal": "Set or randomize the hidden U.S. type.",
+      "user_action": "Choose Randomize or Teaching Mode",
+      "ui_elements": [
+        "type card hidden from China",
+        "randomize button",
+        "manual toggle"
+      ],
+      "state_updates": [
+        "usType"
+      ]
+    },
+    {
+      "step_id": "signal_choice",
+      "title": "The U.S. sends a compute signal",
+      "screen_goal": "Let the user select E, T, or K.",
+      "user_action": "Click one signal card",
+      "ui_elements": [
+        "Export Controls card",
+        "Training Thresholds card",
+        "Provider Oversight card"
+      ],
+      "state_updates": [
+        "signal"
+      ]
+    },
+    {
+      "step_id": "belief_update",
+      "title": "China updates belief",
+      "screen_goal": "Show posterior belief mu(H|s).",
+      "user_action": "Inspect the probability bar or adjust sliders",
+      "ui_elements": [
+        "belief bar",
+        "prior slider",
+        "noise slider",
+        "loopholes slider",
+        "signal explanation text"
+      ],
+      "state_updates": [
+        "chinaBelief"
+      ]
+    },
+    {
+      "step_id": "china_response",
+      "title": "China chooses a response",
+      "screen_goal": "Show the adapt/wait decision using the adaptation threshold.",
+      "user_action": "Click Adapt or Wait, or enable Auto Response",
+      "ui_elements": [
+        "Adapt button",
+        "Wait button",
+        "adaptation threshold marker",
+        "auto response toggle"
+      ],
+      "state_updates": [
+        "chinaResponse"
+      ]
+    },
+    {
+      "step_id": "equilibrium_outcome",
+      "title": "What kind of signaling outcome is this?",
+      "screen_goal": "Classify the outcome as separating, pooling, semi-separating, or institutional persistence.",
+      "user_action": "Read result and compare alternative moves",
+      "ui_elements": [
+        "outcome card",
+        "payoff bars",
+        "credibility/adaptation warning"
+      ],
+      "state_updates": [
+        "outcomeType"
+      ]
+    },
+    {
+      "step_id": "vietnam_panel",
+      "title": "What Vietnam learns",
+      "screen_goal": "Translate U.S.-China signaling into Vietnam policy implications.",
+      "user_action": "Read downstream implication, then reset or try another signal",
+      "ui_elements": [
+        "Vietnam implication card",
+        "dependency meter",
+        "governance capacity meter"
+      ],
+      "state_updates": [
+        "vietnamAutonomyScore",
+        "policyRecommendation"
+      ]
+    }
+  ],
+  "ui_components": {
+    "SignalCard": {
+      "props": [
+        "signalId",
+        "label",
+        "costLevel",
+        "visibility",
+        "beliefEffect",
+        "risk",
+        "selected"
+      ],
+      "behavior": "On click, set gameState.signal and recompute belief."
+    },
+    "BeliefBar": {
+      "props": [
+        "priorHighResolve",
+        "chinaBelief",
+        "adaptationThreshold"
+      ],
+      "behavior": "Show prior and posterior; animate the bar after signal selection."
+    },
+    "ResponseButtons": {
+      "props": [
+        "chinaBelief",
+        "adaptationThreshold",
+        "autoResponse"
+      ],
+      "behavior": "Let the user choose Adapt/Wait or auto-select based on threshold."
+    },
+    "OutcomeCard": {
+      "props": [
+        "signal",
+        "chinaBelief",
+        "chinaResponse",
+        "outcomeType"
+      ],
+      "behavior": "Explain whether the signal reveals type, pools type, or creates an adaptation paradox."
+    },
+    "VietnamPanel": {
+      "props": [
+        "signal",
+        "chinaResponse",
+        "vietnamDependency",
+        "vietnamGovernanceCapacity"
+      ],
+      "behavior": "Display downstream implication and policy recommendation."
+    },
+    "AdvancedMode": {
+      "props": [
+        "enabled"
+      ],
+      "behavior": "When enabled, reveal equations, posterior formula, adaptation threshold formula, and payoff notation."
+    }
+  },
+  "initial_game_state": {
+    "usType": "H",
+    "teachingMode": false,
+    "priorHighResolve": 0.5,
+    "signal": null,
+    "chinaBelief": 0.5,
+    "chinaResponse": null,
+    "adaptationThreshold": 0.6,
+    "adaptationCapacity": 0.5,
+    "loopholes": 0.3,
+    "noise": 0.2,
+    "enforcementPersistence": 0.5,
+    "vietnamDependency": 0.6,
+    "vietnamGovernanceCapacity": 0.4,
+    "advancedMode": false,
+    "outcomeType": null,
+    "currentRound": 1,
+    "roundHistory": [],
+    "autoResponse": true,
+    "showCostTypology": false,
+    "showVietnamPanel": false,
+    "showMath": false,
+    "materialEffect": 0.5,
+    "credibilityScore": 0.5
+  },
+  "sliders": [
+    {
+      "id": "priorHighResolve",
+      "label": "Prior belief that U.S. is High Resolve",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.5,
+      "affects": [
+        "chinaBelief"
+      ]
+    },
+    {
+      "id": "adaptationCapacity",
+      "label": "China adaptation capacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.5,
+      "affects": [
+        "adaptationThreshold",
+        "chinaResponse"
+      ]
+    },
+    {
+      "id": "loopholes",
+      "label": "Loophole availability",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.3,
+      "affects": [
+        "materialEffect",
+        "chinaResponse"
+      ]
+    },
+    {
+      "id": "noise",
+      "label": "Signal noise",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.2,
+      "affects": [
+        "chinaBelief"
+      ]
+    },
+    {
+      "id": "enforcementPersistence",
+      "label": "Enforcement persistence",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.5,
+      "affects": [
+        "chinaBelief",
+        "providerOversightCredibility"
+      ]
+    },
+    {
+      "id": "vietnamDependency",
+      "label": "Vietnam dependency on one supplier",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.6,
+      "affects": [
+        "vietnamAutonomyScore"
+      ]
+    },
+    {
+      "id": "vietnamGovernanceCapacity",
+      "label": "Vietnam governance capacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.4,
+      "affects": [
+        "policyRecommendation",
+        "vietnamAutonomyScore"
+      ]
+    }
+  ],
+  "suggested_logic": {
+    "computeSignalLikelihoods": {
+      "description": "Approximate teaching values. Adjust for feel rather than claiming empirical precision.",
+      "E": {
+        "Pr_s_given_H": 0.8,
+        "Pr_s_given_L": 0.2
+      },
+      "K": {
+        "Pr_s_given_H": 0.6,
+        "Pr_s_given_L": 0.4
+      },
+      "T": {
+        "Pr_s_given_H": 0.5,
+        "Pr_s_given_L": 0.45
+      }
+    },
+    "beliefFunctionPseudoCode": [
+      "function updateBelief(signal, prior, noise, enforcementPersistence) {",
+      "  const likelihoods = getLikelihoods(signal, enforcementPersistence);",
+      "  const raw = (likelihoods.H * prior) / ((likelihoods.H * prior) + (likelihoods.L * (1 - prior)));",
+      "  return raw * (1 - noise) + prior * noise;",
+      "}"
+    ],
+    "thresholdFunctionPseudoCode": [
+      "function computeAdaptationThreshold(adaptationCapacity, loopholes) {",
+      "  const base = 0.65;",
+      "  const capacityEffect = 0.35 * adaptationCapacity;",
+      "  const loopholeEffect = 0.15 * loopholes;",
+      "  return clamp(base - capacityEffect + loopholeEffect, 0.15, 0.9);",
+      "}"
+    ],
+    "responseFunctionPseudoCode": [
+      "function autoChinaResponse(chinaBelief, adaptationThreshold) {",
+      "  return chinaBelief >= adaptationThreshold ? 'A' : 'W';",
+      "}"
+    ],
+    "outcomeClassifierPseudoCode": [
+      "function classifyOutcome(signal, chinaBelief, threshold, response, priorHighResolve) {",
+      "  if (signal === 'E' && chinaBelief >= threshold && response === 'A') return 'adaptation_paradox';",
+      "  if (signal === 'E' && chinaBelief >= threshold && response === 'W') return 'credible_deterrence_or_delay';",
+      "  if (signal === 'T' && Math.abs(chinaBelief - priorHighResolve) < 0.1) return 'pooling_or_weak_signal';",
+      "  if (signal === 'K') return 'institutional_persistence_signal';",
+      "  return 'mixed_signal';",
+      "}"
+    ],
+    "roundControllerPseudoCode": [
+      "function playRound({ signal, state }) {",
+      "  const chinaBelief = updateBelief(signal, state.priorHighResolve, state.noise, state.enforcementPersistence);",
+      "  const adaptationThreshold = computeAdaptationThreshold(state.adaptationCapacity, state.loopholes);",
+      "  const chinaResponse = state.autoResponse ? autoChinaResponse(chinaBelief, adaptationThreshold) : state.chinaResponse;",
+      "  const outcomeType = classifyOutcome(signal, chinaBelief, adaptationThreshold, chinaResponse, state.priorHighResolve);",
+      "  const vietnamLesson = getVietnamImplication(signal, chinaResponse, outcomeType);",
+      "  return { ...state, signal, chinaBelief, adaptationThreshold, chinaResponse, outcomeType, vietnamLesson };",
+      "}"
+    ],
+    "getVietnamImplicationPseudoCode": [
+      "function getVietnamImplication(signal, response, outcomeType) {",
+      "  const base = vietnam_implications[signal] || vietnam_implications.general;",
+      "  if (outcomeType === 'adaptation_paradox') {",
+      "    return { ...base, extra: 'Credible restrictions can trigger substitution; Vietnam should learn from adaptation without copying full-stack sovereignty.' };",
+      "  }",
+      "  return base;",
+      "}"
+    ]
+  },
+  "outcomes": {
+    "adaptation_paradox": {
+      "title": "Credible signal, accelerated adaptation",
+      "copy": "The signal successfully convinces China that the U.S. is likely High Resolve. But because waiting now looks risky, China adapts faster.",
+      "lesson": "Credibility and coercive effectiveness are different."
+    },
+    "credible_deterrence_or_delay": {
+      "title": "Credible signal, China waits",
+      "copy": "China sees the U.S. signal as credible, but adaptation is still too costly or the option value of waiting remains high.",
+      "lesson": "A credible signal can preserve lead time when adaptation capacity is low."
+    },
+    "pooling_or_weak_signal": {
+      "title": "Pooling or weak signal",
+      "copy": "The signal is easy for both High and Low Resolve types to send. China remains uncertain and belief stays near the prior.",
+      "lesson": "A cheap or reversible policy may regulate activity without strongly revealing resolve."
+    },
+    "institutional_persistence_signal": {
+      "title": "Institutional persistence signal",
+      "copy": "Provider oversight may not look dramatic at first, but repeated KYC, audits, and enforcement can reveal resolve over time.",
+      "lesson": "Some credibility accumulates through persistence rather than one-time sacrifice."
+    },
+    "mixed_signal": {
+      "title": "Mixed signal",
+      "copy": "The signal changes beliefs, but not enough to generate a clean separating or pooling result.",
+      "lesson": "Real compute governance often combines material restriction, symbolic communication, loopholes, and noise."
+    }
+  },
+  "vietnam_implications": {
+    "E": {
+      "title": "If export controls dominate",
+      "interpretation": "Frontier compute access is politically conditional and can be restricted through chokepoints.",
+      "recommendation": "Diversify compute access, avoid single-supplier dependence, and preserve strategic room for maneuver."
+    },
+    "T": {
+      "title": "If threshold governance dominates",
+      "interpretation": "AI governance increasingly depends on measurable indicators such as compute scale, reporting triggers, and evaluation thresholds.",
+      "recommendation": "Build domestic capacity for compute classification, standards alignment, and risk-tiered reporting."
+    },
+    "K": {
+      "title": "If provider oversight dominates",
+      "interpretation": "Cloud and data-center access becomes compliance-mediated through providers, audits, KYC, and logs.",
+      "recommendation": "Develop trusted intermediary governance through licensed cloud providers, data centers, and sectoral service providers."
+    },
+    "general": {
+      "title": "Flexible commitment",
+      "interpretation": "Vietnam should commit to credible AI governance while preserving flexibility across suppliers, standards, and model ecosystems.",
+      "recommendation": "Sequence reforms according to domestic institutional capacity instead of trying to copy frontier-power governance wholesale."
+    }
+  },
+  "copy_blocks": {
+    "intro_hook": "Can a policy be too credible? In compute governance, a costly signal may reveal resolve. But once the receiver believes the signal, waiting may become dangerous.",
+    "core_model": "The U.S. sends a signal. China updates its belief. China adapts or waits. Vietnam watches the constraints ripple downstream.",
+    "advanced_mode_intro": "Advanced mode shows the formal signaling model behind the interaction.",
+    "reset_button": "Try another world",
+    "randomize_button": "Let Nature choose",
+    "teaching_mode_button": "Teaching mode"
+  },
+  "style_guidance": {
+    "tone": "Playful but serious. Make it feel like an explorable explanation, not a policy dashboard.",
+    "visual_style": [
+      "Left-to-right flow",
+      "Large clickable cards",
+      "Animated belief bar",
+      "Minimal equations until advanced mode",
+      "Warm editorial palette",
+      "Small character icons for U.S., China, and Vietnam",
+      "Use microcopy to explain why the probability moved"
+    ],
+    "avoid": [
+      "Dense academic paragraphs on the first screen",
+      "Overloading users with all equations at once",
+      "Turning Vietnam into a formal third player",
+      "Binary win/loss framing"
+    ]
+  },
+  "acceptance_criteria": [
+    "User can randomize or manually choose U.S. type.",
+    "User can choose one of three signals: E, T, K.",
+    "China belief bar updates after signal selection.",
+    "China response is either Adapt or Wait.",
+    "Outcome card explains separating, pooling, institutional persistence, or adaptation paradox logic.",
+    "Vietnam panel gives a downstream policy implication.",
+    "Advanced mode reveals formulas without cluttering the main flow.",
+    "Reset button returns to initial state.",
+    "All key text is editable in one JSON/config object."
+  ],
+  "simulation_round_loop": {
+    "round_summary": "Each round teaches one thesis concept through action before explanation.",
+    "canonical_loop": [
+      "Nature assigns the U.S. hidden type: High Resolve or Low Resolve.",
+      "The user, playing the U.S., chooses one compute governance signal: E, T, or K.",
+      "China observes only the signal, not the U.S. type.",
+      "China updates posterior belief mu(H|s).",
+      "China compares posterior belief to its adaptation threshold mu_star.",
+      "China chooses Adapt or Wait, either manually or via Auto Response.",
+      "The game reveals the dominant cost mechanism and outcome classification.",
+      "Vietnam watches the outcome and receives a flexible-commitment policy implication."
+    ],
+    "rounds": [
+      {
+        "round_id": 1,
+        "title": "Round 1: The Basic Signal",
+        "learning_goal": "Signals change beliefs.",
+        "default_settings": {
+          "priorHighResolve": 0.5,
+          "adaptationCapacity": 0.5,
+          "loopholes": 0.3,
+          "noise": 0.2,
+          "enforcementPersistence": 0.5
+        },
+        "teaching_reveal": "The signal matters because China cannot observe U.S. resolve directly. It updates from what the U.S. is willing to do."
+      },
+      {
+        "round_id": 2,
+        "title": "Round 2: Cheap Signals Pool",
+        "learning_goal": "Thresholds can be visible but still weak as signals.",
+        "forced_or_suggested_signal": "T",
+        "teaching_reveal": "Because both High and Low Resolve types can announce thresholds cheaply, China learns less from the announcement alone."
+      },
+      {
+        "round_id": 3,
+        "title": "Round 3: Cost Type Reveal",
+        "learning_goal": "Different policies become credible through different cost mechanisms.",
+        "enable_cost_typology_card": true,
+        "teaching_reveal": "Export controls mostly teach sunk cost and tying hands. Provider oversight teaches installment and reducible costs. Thresholds teach future enforcement expectations."
+      },
+      {
+        "round_id": 4,
+        "title": "Round 4: Repetition Changes Meaning",
+        "learning_goal": "Provider oversight becomes credible through persistence.",
+        "forced_or_suggested_signal": "K",
+        "multi_turn_sequence": [
+          {
+            "turn": 1,
+            "event": "KYC announced",
+            "belief_delta_hint": "+ small"
+          },
+          {
+            "turn": 2,
+            "event": "Audit enforced",
+            "belief_delta_hint": "+ medium"
+          },
+          {
+            "turn": 3,
+            "event": "Penalty or access denial imposed",
+            "belief_delta_hint": "+ strong"
+          }
+        ],
+        "teaching_reveal": "Provider oversight does not need a dramatic one-time sacrifice. It separates types gradually if the state keeps enforcing."
+      },
+      {
+        "round_id": 5,
+        "title": "Round 5: Vietnam Watches",
+        "learning_goal": "Vietnam should not imitate the great-power game; it should preserve room for maneuver.",
+        "force_vietnam_panel_open": true,
+        "teaching_reveal": "Vietnam observes the constraints created by U.S.-China signaling and responds through flexible commitment: diversification, interoperability, modular infrastructure, and sequenced governance."
+      }
+    ]
+  },
+  "screen_architecture": {
+    "main_layout": {
+      "left": "Game board: Nature → U.S. → Signal → China → Outcome",
+      "center": "Belief meter: prior, posterior, adaptation threshold, and animated movement",
+      "right": "Interpretation card: type, signal, China response, cost mechanism, Vietnam implication"
+    },
+    "nicky_case_style_notes": [
+      "Prefer hand-drawn boxes, playful arrows, and short microcopy.",
+      "Let users click and watch the system react before showing the theory.",
+      "Use small repeated reveals rather than one long explanation.",
+      "Use terms like 'try another world', 'let Nature choose', and 'show the math' for buttons."
+    ]
+  },
+  "implementation_plan_for_codex": {
+    "recommended_repo_placement": {
+      "spec_file": "src/data/signalingGameSpec.json",
+      "logic_file": "src/game/signalingGameLogic.js",
+      "ui_file_if_vanilla": "src/components/signalingGame.js or js/interaction.js",
+      "styles_file": "src/styles/signalingGame.css or css/style.css"
+    },
+    "first_pass_tasks": [
+      "Load this JSON spec into the app.",
+      "Create a single round-based game state object.",
+      "Render the three signal cards from spec.game_model.signals.",
+      "Implement updateBelief, computeAdaptationThreshold, autoChinaResponse, and classifyOutcome from suggested_logic.",
+      "Render BeliefBar with prior, posterior, and threshold marker.",
+      "Render OutcomeCard and VietnamPanel after China response.",
+      "Add reset, randomize Nature, teaching mode, and advanced mode toggles."
+    ],
+    "second_pass_tasks": [
+      "Add 5 guided rounds using simulation_round_loop.rounds.",
+      "Add animated belief movement.",
+      "Add cost typology reveal card.",
+      "Add provider oversight repeated-enforcement mini-sequence.",
+      "Polish copy and responsive layout."
+    ],
+    "do_not_do": [
+      "Do not hard-code thesis copy throughout components.",
+      "Do not turn Vietnam into a third strategic player.",
+      "Do not make China a hidden type called adapt/wait.",
+      "Do not claim numerical values are empirical estimates; they are teaching values.",
+      "Do not add external claims beyond the spec and thesis unless the user asks."
+    ]
+  },
+  "cost_typology_card": {
+    "title": "Four Ways Signals Become Costly",
+    "matrix": {
+      "ex_ante_non_contingent": {
+        "label": "Sunk costs",
+        "plain_language": "Paid upfront and not recovered, whatever China does.",
+        "example_signal": "Export controls"
+      },
+      "ex_ante_contingent": {
+        "label": "Reducible costs",
+        "plain_language": "Paid upfront, but partly offset if the sender follows through.",
+        "example_signal": "Provider oversight capacity or domestic compute investment"
+      },
+      "ex_post_non_contingent": {
+        "label": "Installment costs",
+        "plain_language": "Future costs paid over time, whatever China does.",
+        "example_signal": "Recurring KYC, audits, enforcement staff, reporting systems"
+      },
+      "ex_post_contingent": {
+        "label": "Tied-hands costs",
+        "plain_language": "Future costs paid if the sender backs down.",
+        "example_signal": "Thresholds or export controls that create reversal expectations"
+      }
+    }
+  },
+  "codex_prompt": {
+    "title": "Prompt to paste into Codex",
+    "body": "You are editing my Signals of Compute Power interactive explorable. Use src/data/signalingGameSpec.json as the source of truth.\n\nBuild the first working version of the round-based signaling simulation:\n1. Load the JSON spec.\n2. Render a Nicky Case-style left-to-right board: Nature → U.S. → Signal → China → Outcome.\n3. Let the user randomize or manually set U.S. type: High Resolve or Low Resolve.\n4. Let the user choose one of three signal cards: Export Controls, Training Compute Thresholds, Provider Oversight.\n5. After a signal is selected, animate China’s belief bar from prior belief to posterior belief.\n6. Show China’s adaptation threshold and auto-select Adapt or Wait when Auto Response is enabled.\n7. Render an OutcomeCard explaining adaptation paradox, weak/pooling signal, or institutional persistence.\n8. Render VietnamPanel as downstream observer only, with flexible-commitment recommendation.\n9. Add Advanced Mode that reveals formulas but keeps the default UI simple.\n10. Keep all copy editable through the JSON spec. Do not hard-code long thesis text in components.\n\nImportant conceptual constraints:\n- China is a receiver with an Adapt/Wait response, not a hidden type.\n- Vietnam is not a third player in the formal game.\n- Do not frame the game as U.S. win / China lose.\n- The central lesson is: credibility and coercive effectiveness are different."
+  }
+}
