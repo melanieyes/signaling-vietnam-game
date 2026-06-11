@@ -410,7 +410,7 @@
 .role-game-page{
 	width: 100%;
 	height: 100%;
-	padding: 24px 42px 22px;
+	padding: 22px 18px 18px;
 	background: #fff;
 }
 .role-game-header{
@@ -418,7 +418,7 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 24px;
-	margin-bottom: 20px;
+	margin-bottom: 14px;
 }
 .role-game-header h2{
 	margin: 0 0 7px;
@@ -434,42 +434,197 @@
 }
 .role-game-grid{
 	display: grid;
-	grid-template-columns: 255px 1fr 285px;
-	gap: 24px;
-	height: 338px;
+	grid-template-columns: 250px 1fr 326px;
+	grid-template-rows: 372px;
+	gap: 20px;
+	height: 372px;
+	overflow: hidden;
 }
+.role-left,
+.role-game-center,
+.role-reveal{ min-height: 0; overflow: hidden; }
 .role-game-flow{
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 }
 .role-flow-node{
-	min-height: 38px;
-	padding: 5px 10px;
+	min-height: 30px;
+	padding: 3px 9px;
 	border: 3px solid #333;
 	border-radius: 8px;
 	background: #fff;
 }
 .role-flow-node span{
 	display: block;
-	font-size: 14px;
+	font-size: 12px;
 	line-height: 1;
 	color: #777;
 }
 .role-flow-node b{
 	display: block;
-	margin-top: 3px;
-	font-size: 19px;
+	margin-top: 2px;
+	font-size: 16px;
 	line-height: 0.95;
 	color: #222;
 }
 .role-flow-arrow{
-	height: 12px;
+	height: 7px;
 	padding-left: 116px;
-	font-size: 18px;
-	line-height: 12px;
+	font-size: 16px;
+	line-height: 7px;
 	color: #7a3f18;
 }
+
+/* ---- live controls added to the role game ---- */
+.role-left{
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
+}
+.role-game-flow{ gap: 3px; }
+.role-knobs{
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding-top: 8px;
+	border-top: 2px dashed #d8bf92;
+}
+.role-knobs-title{
+	margin: 0 0 2px;
+	font-size: 14px;
+	color: #7a3f18;
+}
+.role-knob{ display: block; font-size: 13px; color: #555; }
+.role-knob-top{
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+	line-height: 1.05;
+}
+.role-knob-top b{ color: #315f7c; }
+.role-knob input[type=range]{
+	width: 100%;
+	height: 16px;
+	margin: 1px 0 0;
+	accent-color: #315f7c;
+	cursor: pointer;
+}
+.role-signal-switch{
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 12px;
+	max-width: 100%;
+	margin: 0 auto 8px;
+}
+.role-switch-btn{
+	font-family: 'FuturaHandwritten';
+	border: 3px solid #333;
+	border-radius: 8px;
+	background: #fff;
+	color: #315f7c;
+	font-size: 22px;
+	min-height: 92px;
+	padding: 12px 8px;
+	cursor: pointer;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.14);
+	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+.role-switch-btn:hover{
+	transform: translateY(-2px);
+	box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+}
+.role-switch-btn.active{ background: #fff8df; }
+.role-switch-btn b{ display: block; font-size: 21px; line-height: 1.02; }
+.role-switch-btn span{ display: block; font-size: 13px; line-height: 1.05; margin-top: 4px; }
+.role-switch-btn small{ display: block; font-size: 12px; line-height: 1.05; margin-top: 4px; color: #7a3f18; }
+
+/* belief explainer: mood + why-it-moved + verdict */
+.role-belief-explain{ max-width: 370px; margin: 4px auto 0; text-align: center; }
+.role-belief-explain p{ margin: 0 0 4px; }
+.role-mood{ font-size: 16px; color: #315f7c; }
+.role-why{ font-size: 14px; line-height: 1.14; color: #666; }
+.role-verdict{ font-size: 15px; line-height: 1.14; color: #7a3f18; }
+
+/* keep the reveal/result panel inside the frame */
+.role-reveal{ padding: 14px 18px; overflow: hidden; }
+.role-reveal h3{ font-size: 26px; line-height: 1.0; margin-bottom: 8px; }
+.role-reveal p{ font-size: 16px; line-height: 1.13; margin: 0 0 8px; }
+.role-placeholder{ font-size: 22px; }
+.role-reveal .role-outcome-line{ font-size: 16px; line-height: 1.13; margin: 0 0 8px; }
+/* the "play first, name later" payoff */
+.role-policy-reveal{ margin: 0 0 8px; padding: 8px 0; border-top: 2px dashed #d8bf92; border-bottom: 2px dashed #d8bf92; }
+.role-policy-kicker{ display: block; font-size: 13px; color: #7a3f18; }
+.role-reveal .role-policy-reveal b{ display: block; font-size: 21px; line-height: 1; color: #315f7c; margin: 2px 0 4px; }
+.role-reveal .role-policy-reveal p{ font-size: 14px; line-height: 1.13; margin: 0; color: #444; }
+.role-reveal .role-vietnam{ font-size: 14px; line-height: 1.13; color: #7a3f18; margin: 0 0 8px; }
+.role-try-button{ font-size: 18px; padding: 7px 14px; }
+
+/* ---- Equilibrium Lab: world button, verdict, world chips, room meter ---- */
+.role-knobs-head{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 2px;
+}
+.role-knobs-head .role-knobs-title{ margin: 0; }
+/* secondary "lab" action — a small text link beside the world knobs, NOT a
+   second prominent retry button (the primary retry lives in the result panel) */
+.role-world-button{
+	font-family: 'FuturaHandwritten';
+	border: none;
+	background: none;
+	color: #7a3f18;
+	font-size: 13px;
+	line-height: 1;
+	padding: 0;
+	cursor: pointer;
+	white-space: nowrap;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.role-world-button:hover{ color: #a9572a; }
+
+.role-eq-verdict{ font-size: 14px; line-height: 1.13; margin: 0 0 7px; color: #444; }
+.role-eq-verdict b{ color: #315f7c; }
+.role-eq-separating b{ color: #2f6d3a; }
+.role-eq-pooling b{ color: #7a3f18; }
+.role-eq-semi b{ color: #8a6d1f; }
+
+.role-world-chips{ display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 7px; }
+.role-chip{
+	font-size: 11px;
+	line-height: 1;
+	color: #555;
+	border: 1px solid #c9b48a;
+	border-radius: 10px;
+	background: #faf6ea;
+	padding: 3px 7px;
+}
+
+.role-room{ margin: 0 0 9px; }
+.role-room-head{
+	display: flex;
+	justify-content: space-between;
+	font-size: 13px;
+	color: #315f7c;
+	margin-bottom: 3px;
+}
+.role-room-head b{ color: #2f6d3a; }
+.role-room-track{
+	height: 9px;
+	border: 2px solid #333;
+	border-radius: 6px;
+	background: #fff;
+	overflow: hidden;
+}
+.role-room-fill{ height: 100%; background: #5d8a4c; transition: width 0.4s ease-out; }
+
+.role-try-buttons{ display: flex; gap: 8px; flex-wrap: wrap; }
+.role-try-world{ background: #fff; }
+
 .role-game-center,
 .role-decision,
 .role-reveal{
@@ -540,21 +695,31 @@
 .role-oversight-sequence{
 	display: flex;
 	flex-direction: column;
-	gap: 7px;
-	max-width: 320px;
-	margin: 12px auto 0;
+	gap: 6px;
+	max-width: 340px;
+	margin: 6px auto 0;
+}
+.role-oversight-steps{
+	display: flex;
+	gap: 6px;
+	justify-content: center;
 }
 .role-oversight-step{
+	flex: 1 1 0;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
-	gap: 8px;
-	padding: 5px 8px;
+	gap: 2px;
+	padding: 5px 4px;
 	border: 2px solid #bbb;
 	border-radius: 8px;
 	background: #fff;
 	color: #777;
-	text-align: left;
+	text-align: center;
 }
+/* compact the U.S. "keep enforcing" heading so the advance button stays visible */
+.role-decision-build h3{ font-size: 24px; margin: 0 0 4px; }
+.role-decision-build .role-observed{ margin: 0 0 6px; font-size: 17px; }
 .role-oversight-step.current{
 	border-color: #315f7c;
 	color: #315f7c;
@@ -577,7 +742,7 @@
 	flex: 0 0 auto;
 }
 .role-oversight-step b{
-	font-size: 18px;
+	font-size: 14px;
 	line-height: 1;
 }
 .role-oversight-button{
@@ -648,7 +813,7 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 16px 18px;
+	padding: 16px 22px;
 	border: 3px solid #333;
 	border-radius: 8px;
 	background: #fffdf6;
@@ -762,3 +927,289 @@
 	font-size: 23px;
 	line-height: 1.14;
 }
+
+/* ============================================================
+   Vietnam — downstream audience "strategic response board"
+   (SignalingVietnamHedge). Reuses the paper/serif identity:
+   ivory backgrounds, dark outline borders, muted blue titles,
+   brown labels & arrows.
+   ============================================================ */
+.signaling_vietnam_hedge{
+	font-family: 'FuturaHandwritten';
+	color: #333;
+	background: #fff;
+	overflow: hidden;
+}
+.signaling_vietnam_hedge *{ box-sizing: border-box; }
+
+.vh-page{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	padding: 14px 40px 12px;
+	background: #fbf7ec;            /* ivory paper */
+	overflow: hidden;
+}
+/* faint river-delta / grid / server-node motif */
+.vh-bg{
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	opacity: 0.16;
+	pointer-events: none;
+}
+.vh-bg svg{ width: 100%; height: 100%; display: block; }
+.vh-inner{
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+}
+
+.vh-header{
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 26px;
+	margin-bottom: 8px;
+}
+.vh-title{ max-width: 740px; }
+.vh-title h2{
+	margin: 0 0 6px;
+	font-size: 36px;
+	line-height: 0.96;
+	color: #315f7c;
+}
+.vh-sub{
+	margin: 0 0 4px;
+	font-size: 15px;
+	line-height: 1.15;
+	color: #444;
+}
+.vh-tagline{
+	margin: 0;
+	font-size: 17px;
+	color: #7a3f18;
+	font-style: italic;
+}
+.vh-title .role-eyebrow{ font-size: 17px; margin-bottom: 4px; }
+
+/* ---- three-zone board: observed → pressure → response ---- */
+.vh-board{
+	display: grid;
+	grid-template-columns: 1.05fr 28px 1.25fr 28px 1.15fr;
+	align-items: stretch;
+	gap: 0;
+	margin-bottom: 8px;
+	min-height: 0;
+}
+.vh-zone{
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+}
+.vh-zone-label{
+	margin: 0 0 8px;
+	font-size: 16px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #7a3f18;
+}
+.vh-arrow{
+	align-self: center;
+	font-size: 26px;
+	color: #7a3f18;
+	text-align: center;
+}
+
+/* zone 1 — observed signal chips */
+.vh-obs-stack{
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+}
+.vh-obs-chip{
+	padding: 11px 13px;
+	border: 1px solid #b9aa82;
+	border-radius: 7px;
+	background: #f5efdf;
+	font-size: 17px;
+	color: #6b5d3f;
+}
+
+/* zone 2 — strategic pressure meters */
+.vh-meters{
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.vh-meter-head{
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 3px;
+}
+.vh-meter-name{ font-size: 16px; color: #444; }
+.vh-meter-tag{ font-size: 13px; color: #4d7a3f; font-style: italic; }
+.vh-meter-track{
+	height: 11px;
+	border: 2px solid #333;
+	border-radius: 6px;
+	background: #fff;
+	overflow: hidden;
+}
+.vh-meter-fill{
+	height: 100%;
+	background: #b9692f;            /* brown = pressure */
+	transition: width 0.4s ease-out, background 0.3s ease-out;
+}
+.vh-meter.eased .vh-meter-fill{ background: #5d8a4c; }   /* green = managed */
+.vh-meter.active .vh-meter-name{ color: #315f7c; font-weight: bold; }
+.vh-meter.active .vh-meter-track{ border-color: #315f7c; }
+
+/* zone 3 — Vietnam's response levers */
+.vh-levers{
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+.vh-lever{
+	font-family: 'FuturaHandwritten';
+	position: relative;
+	display: flex;
+	align-items: center;
+	padding: 9px 13px;
+	border: 2px solid #333;
+	border-radius: 7px;
+	background: #fff;
+	color: #222;
+	text-align: left;
+	cursor: pointer;
+	box-shadow: 0 3px 0 rgba(0,0,0,0.12);
+	transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+}
+.vh-lever:hover{ transform: translateY(-1px); }
+.vh-lever b{ font-size: 20px; line-height: 1; color: #315f7c; }
+.vh-lever.opened{ border-color: #7a3f18; }
+.vh-lever.selected{
+	background: #fff2c4;            /* ivory/yellow paper */
+	border-width: 3px;
+	border-color: #333;
+	padding: 10px 12px;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.16);
+}
+.vh-lever-flag{
+	position: absolute;
+	top: -8px;
+	right: 9px;
+	padding: 0 5px;
+	border: 1px solid #7a3f18;
+	border-radius: 4px;
+	background: #fff2c4;
+	font-size: 9px;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: #7a3f18;
+}
+
+/* ---- explanation panel (document-like card) ---- */
+.vh-card{
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	border: 3px solid #333;
+	border-radius: 10px;
+	background: #fffdf6;
+	padding: 12px 22px;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.10);
+	overflow: visible;
+}
+.vh-card-head{
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	margin-bottom: 2px;
+}
+.vh-card-head .role-small-label{ margin: 0; }
+.vh-formal{
+	margin: 0;
+	font-size: 17px;
+	color: #7a3f18;
+	font-style: italic;
+}
+.vh-card h3{
+	margin: 0 0 5px;
+	font-size: 28px;
+	line-height: 0.98;
+	color: #315f7c;
+}
+.vh-ifthen{
+	margin: 0 0 6px;
+	font-size: 17px;
+	line-height: 1.15;
+	color: #7a3f18;
+}
+.vh-body-copy{
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.18;
+	color: #333;
+}
+.vh-synthesis{
+	margin: 8px 0 0;
+	padding-top: 8px;
+	border-top: 2px dashed #c9b48a;
+	font-size: 14px;
+	line-height: 1.18;
+	color: #444;
+	font-style: italic;
+}
+
+/* ---- run-context line + Vietnam room-to-move (connects to the role game) ---- */
+.vh-status{
+	display: flex;
+	align-items: stretch;
+	gap: 14px;
+	margin: 0 0 8px;
+}
+.vh-runline{
+	flex: 1 1 auto;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	padding: 6px 12px;
+	border: 2px solid #7a3f18;
+	border-left-width: 6px;
+	border-radius: 6px;
+	background: #fff8df;
+	font-size: 16px;
+	line-height: 1.14;
+	color: #7a3f18;
+}
+.vh-room{
+	flex: 0 0 210px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+.vh-room-head{
+	display: flex;
+	justify-content: space-between;
+	font-size: 14px;
+	color: #315f7c;
+	margin-bottom: 4px;
+}
+.vh-room-head b{ color: #2f6d3a; }
+.vh-room-track{
+	height: 11px;
+	border: 2px solid #333;
+	border-radius: 6px;
+	background: #fff;
+	overflow: hidden;
+}
+.vh-room-fill{ height: 100%; background: #5d8a4c; transition: width 0.45s ease-out; }

@@ -1,0 +1,103 @@
+<!--
+  words.html — all UI copy, keyed by element id (Evolution of Trust convention).
+  Words.get("some_id") returns the innerHTML of <div id="some_id">.
+  The interactive sim slides build their own copy in JS; the text slides + credits read from here.
+  Fill in [YOUR NAME] and the two href="#" links in the credits before publishing.
+-->
+
+<!-- shared next-button label -->
+<div id="signaling_next">next →</div>
+
+
+<!-- ============ SLIDE: intro ============ -->
+<div id="signaling_intro_title">Can a policy be <i>too</i> credible?</div>
+<div id="signaling_intro">
+  The U.S. wants to slow China's AI. So it reaches for <b>compute</b> — the chips, clusters &amp; clouds that train frontier models.<br><br>
+  But China can't read Washington's mind. It only sees what the U.S. is <b>willing to pay for</b>, and has to guess: is this <i>real resolve</i>… or just talk?
+</div>
+<div id="signaling_intro_takeaway">
+  This is a <b>signaling game</b>. You'll play the U.S., send a costly signal, and watch China update its beliefs — sometimes in ways you didn't intend.
+</div>
+<div id="signaling_intro_button">let's play →</div>
+
+
+<!-- ============ SLIDE: the model ============ -->
+<div id="signaling_game_title">Two players, one downstream audience</div>
+<div id="signaling_game_left">
+  <b>The U.S. — the sender.</b><br>
+  Secretly High or Low Resolve. It chooses a compute policy and pays its cost.<br><br>
+  <b>China — the receiver.</b><br>
+  It cannot see U.S. resolve. It updates belief <b>μ(H|s)</b>, then <i>adapts</i> or <i>waits</i>.
+</div>
+<div id="signaling_game_right">
+  <b>Vietnam — the downstream audience.</b><br>
+  It does not choose the U.S. signal or China's response. But it observes the fallout, updates its constraints, and looks for room to maneuver.<br><br>
+  <b>The twist:</b> credibility ≠ control.
+</div>
+<div id="signaling_game_flow">
+  Nature chooses U.S. type → U.S. sends signal → China updates <b>μ(H|s)</b> → China adapts or waits → Vietnam adjusts downstream
+</div>
+<div id="signaling_game_note">
+  A signal becomes credible when a Low-Resolve U.S. would not bother paying for it. That is what makes cost informative.
+</div>
+<div id="signaling_game_button">next →</div>
+
+
+<!-- ============ SLIDE: Quek's 2x2 cost typology ============ -->
+<div id="signaling_typology_title">Four ways a signal gets costly</div>
+<div id="signaling_typology_corner"><i>when you pay&nbsp;↓<br>contingent&nbsp;→</i></div>
+<div id="signaling_typology_noncontingent"><b>non-contingent</b><br><span style="font-size:15px;color:#777">paid no matter what China does</span></div>
+<div id="signaling_typology_contingent"><b>contingent</b><br><span style="font-size:15px;color:#777">paid only if you follow through / back down</span></div>
+<div id="signaling_typology_exante"><b>ex&nbsp;ante</b><br><span style="font-size:14px;color:#777">pay up front</span></div>
+<div id="signaling_typology_expost"><b>ex&nbsp;post</b><br><span style="font-size:14px;color:#777">pay over time</span></div>
+<div id="signaling_typology_sunk"><b>Sunk cost</b><br>Burned up front, whatever happens — you can't get it back. <i>like setting money on fire to prove you're serious</i></div>
+<div id="signaling_typology_reducible"><b>Reducible cost</b><br>Paid up front, but it pays you back if you follow through. <i>like an investment that only pays off if you finish it</i></div>
+<div id="signaling_typology_installment"><b>Installment cost</b><br>Paid in small amounts over time — only if you keep it up. <i>like a subscription you have to keep renewing</i></div>
+<div id="signaling_typology_tied"><b>Tied-hands cost</b><br>Costs nothing now, but hurts you if you back down later. <i>like a public promise you'd lose face breaking</i></div>
+<div id="signaling_typology_takeaway">Fearon gave us <b>sunk</b> &amp; <b>tied-hands</b>. Quek added the other two. Every real compute policy is a mix.</div>
+<div id="signaling_typology_button">now you try →</div>
+
+
+<!-- ============ SLIDE: advanced (the math) ============ -->
+<div id="signaling_advanced_title">The math, if you want it</div>
+<div id="signaling_advanced_left">
+  China updates with Bayes' rule:<br>
+  <b>μ(H|s) = Pr(s|H)·p ⁄ [ Pr(s|H)·p + Pr(s|L)·(1−p) ]</b>
+</div>
+<div id="signaling_advanced_right">
+  China adapts once belief clears its threshold:<br>
+  <b>μ(H|s) ≥ μ* = (q + l) ⁄ (g + d + l)</b>
+</div>
+<div id="signaling_advanced_bottom">
+  q = cost of adapting · g = gain if the U.S. is High · d = danger of waiting · l = option value of waiting.<br>
+  <b>The paradox:</b> even a perfectly credible signal (μ→1) can make adapting the smart move — so credibility can <i>accelerate</i> the very substitution it tried to prevent.
+</div>
+<div id="signaling_advanced_button">scratch this off →</div>
+
+
+<!-- ============ FINAL SLIDE: credits + references, all on one compact screen ============ -->
+<div id="signaling_credits">
+  <div class="credits">
+    interface, sound &amp; explorable style adopted from
+    <div class="big">NICKY CASE</div>
+    <a href="https://ncase.me/trust/" target="_blank">"the evolution of trust"</a>
+    &nbsp;•&nbsp;
+    <a href="https://ncase.me/" target="_blank">play their other stuff</a>
+
+    <span class="divider"></span>
+
+    the signaling model is built on the costly-signaling frameworks of
+    <div class="big">FEARON &amp; QUEK</div>
+    <a href="https://www.jstor.org/stable/174551" target="_blank">Fearon (1997): tying&nbsp;hands vs. sinking&nbsp;costs</a>
+    &nbsp;•&nbsp;
+    <a href="https://doi.org/10.1017/S0003055420001094" target="_blank">Quek (2021): four costly-signaling mechanisms</a>
+
+    <span class="divider"></span>
+
+    p.s: <s>the evolution of trust</s> "Signals of Compute Power" reframes these ideas
+    for compute governance &mdash; the U.S. sends a costly signal, China adapts or waits,
+    and Vietnam watches downstream.<br>
+    want more learning-by-playing? check out
+    <a href="https://explorabl.es/" target="_blank">explorable explanations</a>!
+  </div>
+</div>

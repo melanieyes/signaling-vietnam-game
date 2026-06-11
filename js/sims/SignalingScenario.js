@@ -1,0 +1,1640 @@
+/*
+  Signals of Compute Power
+  One-scenario teaching slide: one signal, one belief update, one lesson.
+*/
+
+function SignalingScenario(config){
+
+  var self = this;
+  self.id = config.id || "signaling_scenario";
+  self.signalId = config.signalId || "E";
+  self.specPath = config.specPath || "signals_of_compute_power_copilot_spec_v2.json";
+  self.width = config.width || 960;
+  self.height = config.height || 540;
+
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_scenario";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = self.width + "px";
+  self.dom.style.height = self.height + "px";
+
+  self.spec = null;
+  self.state = {
+    usType: "H",
+    priorHighResolve: 0.5,
+    chinaBelief: 0.5,
+    adaptationThreshold: 0.6,
+    chinaResponse: null,
+    outcomeType: null,
+    interacted: false
+  };
+
+  var scenarioLessons = {
+    E: {
+      idea: "A credible signal can make waiting feel dangerous.",
+      prompt: "Send the costly signal and watch whether belief crosses China's adaptation threshold.",
+      shortOutcome: "Adapts faster",
+      reveal: "The signal works as a signal. That is the twist: once China believes it, adaptation becomes the safer response.",
+      kicker: "Lesson: costly signals can backfire.",
+      outcome: "adaptation_paradox"
+    },
+    T: {
+      idea: "A measurable threshold can still be a weak signal.",
+      prompt: "Send the threshold signal and watch how little the belief moves.",
+      shortOutcome: "Belief barely moves",
+      reveal: "The policy is legible, but easy for both U.S. types to announce. China learns less from the announcement alone.",
+      kicker: "Lesson: measurable is not always credible.",
+      outcome: "pooling_or_weak_signal"
+    },
+    K: {
+      idea: "Provider oversight becomes credible through repetition.",
+      prompt: "Send the oversight signal and watch persistence do the signaling work.",
+      shortOutcome: "Credibility accumulates",
+      reveal: "Oversight is less dramatic than a chokepoint, but enforcement over time can reveal durable resolve.",
+      kicker: "Lesson: institutions reveal resolve over time.",
+      outcome: "institutional_persistence_signal"
+    }
+  };
+
+  function clone(obj){
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function clamp(value, min, max){
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function pct(value){
+    return Math.round(value * 100) + "%";
+  }
+
+  function get(obj, path, fallback){
+    var cursor = obj;
+    for(var i=0; i<path.length; i++){
+      if(!cursor || cursor[path[i]] === undefined) return fallback;
+      cursor = cursor[path[i]];
+    }
+    return cursor;
+  }
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function button(className, text, onClick){
+    var node = el("button", className, text);
+    node.type = "button";
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function likelihoods(){
+    var values = get(self.spec, ["suggested_logic", "computeSignalLikelihoods", self.signalId], {});
+    var h = values.Pr_s_given_H || 0.5;
+    var l = values.Pr_s_given_L || 0.5;
+    var persistence = get(self.spec, ["initial_game_state", "enforcementPersistence"], 0.5);
+
+    if(self.signalId === "K"){
+      h += 0.18 * persistence;
+      l -= 0.10 * persistence;
+    }
+    if(self.signalId === "T"){
+      h += 0.08 * persistence;
+    }
+
+    return {
+      H: clamp(h, 0.05, 0.95),
+      L: clamp(l, 0.05, 0.95)
+    };
+  }
+
+  function computeBelief(){
+    var prior = self.state.priorHighResolve;
+    var lik = likelihoods();
+    var denominator = (lik.H * prior) + (lik.L * (1 - prior));
+    var raw = denominator ? (lik.H * prior) / denominator : prior;
+    var noise = get(self.spec, ["initial_game_state", "noise"], 0.2);
+    return clamp(raw * (1 - noise) + prior * noise, 0, 1);
+  }
+
+  function computeThreshold(){
+    var capacity = get(self.spec, ["initial_game_state", "adaptationCapacity"], 0.5);
+    var loopholes = get(self.spec, ["initial_game_state", "loopholes"], 0.3);
+    return clamp(0.65 - (0.35 * capacity) + (0.15 * loopholes), 0.15, 0.9);
+  }
+
+  function classify(response){
+    if(self.signalId === "E" && response === "A") return "adaptation_paradox";
+    if(self.signalId === "E" && response === "W") return "credible_deterrence_or_delay";
+    if(self.signalId === "T") return "pooling_or_weak_signal";
+    if(self.signalId === "K") return "institutional_persistence_signal";
+    return "mixed_signal";
+  }
+
+  function signal(){
+    return get(self.spec, ["game_model", "signals", self.signalId], {});
+  }
+
+  function outcome(){
+    var preferred = scenarioLessons[self.signalId] && scenarioLessons[self.signalId].outcome;
+    return get(self.spec, ["outcomes", self.state.outcomeType || preferred], {});
+  }
+
+  function step(){
+    self.state.interacted = true;
+    self.state.chinaBelief = computeBelief();
+    self.state.adaptationThreshold = computeThreshold();
+    self.state.chinaResponse = self.state.chinaBelief >= self.state.adaptationThreshold ? "A" : "W";
+    self.state.outcomeType = classify(self.state.chinaResponse);
+    self.render();
+    publish("signalingScenario/stateChanged", [clone(self.state)]);
+  }
+
+  function reset(){
+    self.state = {
+      usType: "H",
+      priorHighResolve: get(self.spec, ["initial_game_state", "priorHighResolve"], 0.5),
+      chinaBelief: get(self.spec, ["initial_game_state", "priorHighResolve"], 0.5),
+      adaptationThreshold: computeThreshold(),
+      chinaResponse: null,
+      outcomeType: null,
+      interacted: false
+    };
+    self.render();
+  }
+
+  function renderFlow(){
+    var flow = el("section", "scenario-flow");
+    var names = get(self.spec, ["game_model", "players", "US", "hidden_type", "values"], {H:"High Resolve"});
+    var sig = signal();
+    var response = self.state.chinaResponse === "A" ? "Adapt" : (self.state.chinaResponse === "W" ? "Wait" : "?");
+    var lesson = scenarioLessons[self.signalId] || {};
+    var nodes = [
+      ["Nature", names[self.state.usType] || "High Resolve"],
+      ["U.S.", "sends signal"],
+      ["Signal", sig.short_label || sig.label || self.signalId],
+      ["China", response],
+      ["Outcome", self.state.interacted ? (lesson.shortOutcome || "revealed") : "?"]
+    ];
+
+    for(var i=0; i<nodes.length; i++){
+      var node = el("div", "scenario-node");
+      node.appendChild(el("span", "", nodes[i][0]));
+      node.appendChild(el("b", "", nodes[i][1]));
+      flow.appendChild(node);
+      if(i < nodes.length - 1) flow.appendChild(el("div", "scenario-arrow", "->"));
+    }
+    return flow;
+  }
+
+  function renderBeliefBar(){
+    var wrap = el("div", "scenario-belief");
+    var top = el("div", "scenario-belief-label");
+    top.appendChild(el("span", "", "China's belief that U.S. resolve is durable"));
+    top.appendChild(el("b", "", pct(self.state.chinaBelief)));
+    wrap.appendChild(top);
+
+    var track = el("div", "scenario-belief-track");
+    var prior = el("div", "scenario-prior");
+    prior.style.left = pct(self.state.priorHighResolve);
+    track.appendChild(prior);
+
+    var fill = el("div", "scenario-belief-fill");
+    fill.style.width = pct(self.state.chinaBelief);
+    track.appendChild(fill);
+
+    var marker = el("div", "scenario-threshold");
+    marker.style.left = pct(self.state.adaptationThreshold);
+    track.appendChild(marker);
+    wrap.appendChild(track);
+
+    var legend = el("div", "scenario-belief-legend");
+    legend.appendChild(el("span", "", "prior " + pct(self.state.priorHighResolve)));
+    legend.appendChild(el("span", "", "adapt threshold " + pct(self.state.adaptationThreshold)));
+    wrap.appendChild(legend);
+    return wrap;
+  }
+
+  function renderInteraction(){
+    var sig = signal();
+    var lesson = scenarioLessons[self.signalId] || {};
+    var center = el("section", "scenario-center");
+    center.appendChild(el("p", "scenario-small-label", "click once"));
+    center.appendChild(el("h3", "", sig.short_label || sig.label || self.signalId));
+    center.appendChild(el("p", "scenario-copy", lesson.prompt || sig.ui_copy || ""));
+    center.appendChild(renderBeliefBar());
+
+    var actionText = self.state.interacted ? "Run it again" : "Send this signal";
+    center.appendChild(button("scenario-main-button", actionText, step));
+
+    if(!self.state.interacted){
+      center.appendChild(el("p", "scenario-response muted", "Click once. Watch the belief move."));
+    }
+
+    return center;
+  }
+
+  function renderInterpretation(){
+    var right = el("section", "scenario-right");
+    if(!self.state.interacted){
+      right.appendChild(el("div", "scenario-card-placeholder", "Interpretation appears here after you send the signal."));
+      return right;
+    }
+
+    var sig = signal();
+    var out = outcome();
+    var lesson = scenarioLessons[self.signalId] || {};
+    right.appendChild(el("p", "scenario-small-label", "interpretation"));
+    right.appendChild(el("h3", "", out.title || sig.label));
+    right.appendChild(el("p", "", lesson.reveal || out.copy || sig.belief_effect || ""));
+    right.appendChild(el("p", "scenario-kicker", lesson.kicker || out.lesson || ""));
+    return right;
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+
+    if(!self.spec){
+      self.dom.appendChild(el("div", "scenario-loading", "loading..."));
+      return;
+    }
+
+    var sig = signal();
+    var lesson = scenarioLessons[self.signalId] || {};
+    var page = el("div", "scenario-page scenario-" + self.signalId);
+
+    var header = el("header", "scenario-header");
+    var title = el("div");
+    title.appendChild(el("p", "scenario-eyebrow", "Signals of Compute Power"));
+    title.appendChild(el("h2", "", sig.label || "Scenario"));
+    title.appendChild(el("p", "", lesson.idea || sig.description || ""));
+    header.appendChild(title);
+    var headerButtons = el("div", "scenario-header-buttons");
+    headerButtons.appendChild(button("scenario-reset", "reset", reset));
+    headerButtons.appendChild(button("scenario-next", "next", function(){
+      publish("slideshow/next");
+    }));
+    header.appendChild(headerButtons);
+    page.appendChild(header);
+
+    var grid = el("div", "scenario-grid");
+    var left = el("div", "scenario-left");
+    left.appendChild(renderFlow());
+    left.appendChild(el("p", "scenario-left-note", lesson.kicker || ""));
+    grid.appendChild(left);
+    grid.appendChild(renderInteraction());
+    grid.appendChild(renderInterpretation());
+    page.appendChild(grid);
+
+    self.dom.appendChild(page);
+  };
+
+  self.loadSpec = function(){
+    fetch(self.specPath).then(function(response){
+      if(!response.ok) throw new Error("Could not load " + self.specPath);
+      return response.json();
+    }).then(function(spec){
+      self.spec = spec;
+      reset();
+    }).catch(function(err){
+      console.error(err);
+      self.dom.innerHTML = "";
+      self.dom.appendChild(el("div", "scenario-loading", "Could not load scenario spec."));
+    });
+  };
+
+  listen(self, "signalingScenario/step/" + self.signalId, step);
+  listen(self, "signalingScenario/reset/" + self.signalId, reset);
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){
+    unlisten(self);
+    _remove(self);
+  };
+
+  self.render();
+  self.loadSpec();
+}
+
+window.SignalingScenario = SignalingScenario;
+
+function SignalingRoleChoice(config){
+
+  var self = this;
+  self.id = config.id || "signaling_role_choice";
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_role_choice";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = (config.width || 960) + "px";
+  self.dom.style.height = (config.height || 540) + "px";
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function choose(role){
+    window.signalingRole = role;
+    window.signalingSelectedSignal = null;
+    window.signalingHasRunSignal = false;
+    window.signalingLastState = null;
+    window.signalingPhase = "choose-signal";
+    publish("slideshow/next");
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+    var page = el("div", "role-page");
+    page.appendChild(el("p", "role-eyebrow", "Signals of Compute Power"));
+    page.appendChild(el("h2", "", "Who do you want to play?"));
+
+    var choices = el("div", "role-choices");
+    var us = el("button", "role-card");
+    us.type = "button";
+    us.appendChild(el("b", "", "Play as the U.S. Sender"));
+    us.appendChild(el("span", "", "See your type. Choose the signal. China responds automatically."));
+    us.addEventListener("click", function(){ choose("US"); });
+
+    var china = el("button", "role-card");
+    china.type = "button";
+    china.appendChild(el("b", "", "Play as China Receiver"));
+    china.appendChild(el("span", "", "See only the signal and belief. Choose Adapt or Wait."));
+    china.addEventListener("click", function(){ choose("China"); });
+
+    choices.appendChild(us);
+    choices.appendChild(china);
+    page.appendChild(choices);
+    page.appendChild(el("p", "role-note", "Vietnam watches downstream. It is not a playable role."));
+    self.dom.appendChild(page);
+  };
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){ _remove(self); };
+
+  self.render();
+}
+
+window.SignalingRoleChoice = SignalingRoleChoice;
+
+function SignalingSignalSelection(config){
+
+  var self = this;
+  self.id = config.id || "signaling_signal_choice";
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_signal_choice";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = (config.width || 960) + "px";
+  self.dom.style.height = (config.height || 540) + "px";
+
+  var signals = [
+    {
+      id: "E",
+      title: "A big upfront sacrifice",
+      copy: "Pay a large, visible cost right now.",
+      jump: "Costly &amp; hard to fake.",
+      cost: "Cost type: sunk + tied-hands."
+    },
+    {
+      id: "T",
+      title: "A cheap public promise",
+      copy: "Announce a rule. Easy to say, easy to walk back.",
+      jump: "Cheap &amp; easy to copy.",
+      cost: "Cost type: weak tied-hands."
+    },
+    {
+      id: "K",
+      title: "Repeated enforcement",
+      copy: "Start small, then keep enforcing over time.",
+      jump: "Slow-burn credibility.",
+      cost: "Cost type: installment + reducible."
+    }
+  ];
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function choose(signalId){
+    window.signalingSelectedSignal = signalId;
+    window.signalingHasRunSignal = true;
+    window.signalingPhase = "run-signal";
+    publish("slideshow/next");
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+    var page = el("div", "signal-choice-page");
+    page.appendChild(el("p", "role-eyebrow", window.signalingRole === "China" ? "Play as China Receiver" : "Play as the U.S. Sender"));
+    page.appendChild(el("h2", "", "Pick your move"));
+    page.appendChild(el("p", "signal-choice-note", "Three kinds of costly signal. Play first — you'll discover which real compute policy each one actually is once the result is in."));
+
+    var grid = el("div", "signal-choice-grid");
+    for(var i=0; i<signals.length; i++){
+      (function(signal){
+        var card = el("button", "signal-choice-card");
+        card.type = "button";
+        card.appendChild(el("b", "", signal.title));
+        card.appendChild(el("span", "", signal.copy));
+        card.appendChild(el("small", "", signal.jump));
+        card.appendChild(el("small", "", signal.cost));
+        card.addEventListener("click", function(){ choose(signal.id); });
+        grid.appendChild(card);
+      })(signals[i]);
+    }
+    page.appendChild(grid);
+    self.dom.appendChild(page);
+  };
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){ _remove(self); };
+
+  self.render();
+}
+
+window.SignalingSignalSelection = SignalingSignalSelection;
+
+function SignalingRoleGame(config){
+
+  var self = this;
+  self.id = config.id || "signaling_role_game";
+  self.specPath = config.specPath || "signals_of_compute_power_copilot_spec_v2.json";
+  self.role = window.signalingRole || "US";
+
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_role_game";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = (config.width || 960) + "px";
+  self.dom.style.height = (config.height || 540) + "px";
+
+  self.spec = null;
+  self.nextChinaSignalIndex = 0;
+  self.state = {
+    usType: "H",
+    signal: null,
+    priorHighResolve: 0.5,
+    adaptationCapacity: 0.5,
+    loopholes: 0.3,
+    noise: 0.2,
+    costKey: "medium",
+    chinaBelief: 0.5,
+    adaptationThreshold: 0.6,
+    chinaResponse: null,
+    outcomeType: null,
+    oversightStep: 0,
+    revealed: false
+  };
+  self._lastEq = null;
+
+  function clone(obj){
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function clamp(value, min, max){
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function pct(value){
+    return Math.round(value * 100) + "%";
+  }
+
+  function get(obj, path, fallback){
+    var cursor = obj;
+    for(var i=0; i<path.length; i++){
+      if(!cursor || cursor[path[i]] === undefined) return fallback;
+      cursor = cursor[path[i]];
+    }
+    return cursor;
+  }
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function button(className, text, onClick){
+    var node = el("button", className, text);
+    node.type = "button";
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function signalIds(){
+    return ["E", "T", "K"];
+  }
+
+  function signalInfo(signalId){
+    return get(self.spec, ["game_model", "signals", signalId], {});
+  }
+
+  function likelihoods(signalId){
+    var values = get(self.spec, ["suggested_logic", "computeSignalLikelihoods", signalId], {});
+    var h = values.Pr_s_given_H || 0.5;
+    var l = values.Pr_s_given_L || 0.5;
+    var persistence = get(self.spec, ["initial_game_state", "enforcementPersistence"], 0.5);
+
+    if(signalId === "K"){
+      h += 0.18 * persistence;
+      l -= 0.10 * persistence;
+    }
+    if(signalId === "T"){
+      h += 0.08 * persistence;
+    }
+
+    // Cost environment widens (costly) or collapses (cheap) the gap between the
+    // two U.S. types around their midpoint — that is what flips a signal between
+    // separating and pooling when you hit "Try another world".
+    var env = window.SignalingWorld && SignalingWorld.COST_ENVIRONMENTS[self.state.costKey];
+    var f = env ? env.factor : 1;
+    var mid = (h + l) / 2;
+    h = mid + (h - mid) * f;
+    l = mid + (l - mid) * f;
+
+    return { H: clamp(h, 0.05, 0.95), L: clamp(l, 0.05, 0.95) };
+  }
+
+  function computeBelief(signalId){
+    var prior = self.state.priorHighResolve;
+    var lik = likelihoods(signalId);
+    var denominator = (lik.H * prior) + (lik.L * (1 - prior));
+    var raw = denominator ? (lik.H * prior) / denominator : prior;
+    var noise = self.state.noise;
+    return clamp(raw * (1 - noise) + prior * noise, 0, 1);
+  }
+
+  function computeThreshold(){
+    var capacity = self.state.adaptationCapacity;
+    var loopholes = self.state.loopholes;
+    return clamp(0.65 - (0.35 * capacity) + (0.15 * loopholes), 0.15, 0.9);
+  }
+
+  function autoChinaResponse(){
+    return self.state.chinaBelief >= self.state.adaptationThreshold ? "A" : "W";
+  }
+
+  function classify(signalId, response){
+    if(signalId === "E" && self.state.chinaBelief >= self.state.adaptationThreshold && response === "A") return "adaptation_paradox";
+    if(signalId === "E" && self.state.chinaBelief >= self.state.adaptationThreshold && response === "W") return "credible_deterrence_or_delay";
+    if(signalId === "T" && Math.abs(self.state.chinaBelief - self.state.priorHighResolve) < 0.1) return "pooling_or_weak_signal";
+    if(signalId === "K") return "institutional_persistence_signal";
+    return "mixed_signal";
+  }
+
+  function sampleSignalForType(){
+    var ids = signalIds();
+    var total = 0;
+    var weights = [];
+    for(var i=0; i<ids.length; i++){
+      var lik = likelihoods(ids[i]);
+      var weight = self.state.usType === "H" ? lik.H : lik.L;
+      weights.push(weight);
+      total += weight;
+    }
+    var roll = Math.random() * total;
+    for(var j=0; j<ids.length; j++){
+      roll -= weights[j];
+      if(roll <= 0) return ids[j];
+    }
+    return ids[0];
+  }
+
+  function vietnamImplication(){
+    var implications = self.spec.vietnam_implications || {};
+    return implications[self.state.signal] || implications.general || {};
+  }
+
+  function outcome(){
+    return get(self.spec, ["outcomes", self.state.outcomeType], {});
+  }
+
+  function outcomeLine(){
+    var lines = {
+      adaptation_paradox: "Credible signal, but China adapts.",
+      credible_deterrence_or_delay: "Credible signal, China waits.",
+      pooling_or_weak_signal: "Belief stays close to the prior.",
+      institutional_persistence_signal: "Credibility accumulates through enforcement.",
+      mixed_signal: "The signal moves belief, but not cleanly."
+    };
+    return lines[self.state.outcomeType] || "The signal changes the next move.";
+  }
+
+  function vietnamLine(){
+    var lines = {
+      E: "Diversify compute access; avoid one chokepoint.",
+      T: "Build capacity for standards, reporting, and risk tiers.",
+      K: "Govern trusted cloud and data-center intermediaries."
+    };
+    return lines[self.state.signal] || "Preserve flexibility while building governance capacity.";
+  }
+
+  function oversightSteps(){
+    return [
+      { label: "Announce KYC", short: "Announce", copy: "A policy exists. Belief nudges upward." },
+      { label: "Audit providers", short: "Audit", copy: "Implementation appears. Belief rises again." },
+      { label: "Enforce penalty", short: "Enforce", copy: "Follow-through is costly. Credibility lands." }
+    ];
+  }
+
+  function computeOversightBelief(step){
+    var fullBelief = computeBelief("K");
+    var fractions = [0, 0.3, 0.65, 1];
+    var fraction = fractions[clamp(step, 0, 3)] || 0;
+    return clamp(self.state.priorHighResolve + ((fullBelief - self.state.priorHighResolve) * fraction), 0, 1);
+  }
+
+  function advanceOversight(){
+    if(self.state.signal !== "K" || self.state.oversightStep >= 3) return;
+    self.state.oversightStep++;
+    self.state.chinaBelief = computeOversightBelief(self.state.oversightStep);
+    self.state.adaptationThreshold = computeThreshold();
+
+    if(self.state.oversightStep === 3 && self.role === "US"){
+      self.state.chinaResponse = autoChinaResponse();
+      self.state.outcomeType = classify(self.state.signal, self.state.chinaResponse);
+      self.state.revealed = true;
+      window.signalingLastState = clone(self.state);
+      commitRun();
+    }
+
+    self.render();
+    publish("signalingRoleGame/stateChanged", [clone(self.state)]);
+  }
+
+  function chooseSignal(signalId){
+    self.state.signal = signalId;
+    self.state.chinaBelief = computeBelief(signalId);
+    self.state.adaptationThreshold = computeThreshold();
+    self.state.chinaResponse = autoChinaResponse();
+    self.state.outcomeType = classify(signalId, self.state.chinaResponse);
+    self.state.revealed = true;
+    window.signalingLastState = clone(self.state);
+    commitRun();
+    self.render();
+    publish("signalingRoleGame/stateChanged", [clone(self.state)]);
+  }
+
+  function chooseResponse(response){
+    self.state.chinaResponse = response;
+    self.state.outcomeType = classify(self.state.signal, response);
+    self.state.revealed = true;
+    window.signalingLastState = clone(self.state);
+    commitRun();
+    self.render();
+    publish("signalingRoleGame/stateChanged", [clone(self.state)]);
+  }
+
+  function handleTryAnotherSignal(){
+    window.signalingSelectedSignal = null;
+    window.signalingHasRunSignal = false;
+    window.signalingLastState = null;
+    window.signalingPhase = "choose-signal";
+    self.state.signal = null;
+    self.state.chinaResponse = null;
+    self.state.outcomeType = null;
+    self.state.oversightStep = 0;
+    self.state.revealed = false;
+    self.state.chinaBelief = self.state.priorHighResolve;
+    self.state.adaptationThreshold = computeThreshold();
+    publish("signalingRoleGame/stateChanged", [clone(self.state)]);
+    publish("slideshow/goto", ["signaling_signal_choice"]);
+  }
+
+  function prepareSelectedSignal(){
+    var ids = signalIds();
+    var selected = window.signalingSelectedSignal;
+    if(ids.indexOf(selected) < 0) selected = "E";
+    self.state.usType = Math.random() > 0.5 ? "H" : "L";
+    self.state.signal = selected;
+    self.state.oversightStep = 0;
+    self.state.chinaBelief = self.state.signal === "K" ? self.state.priorHighResolve : computeBelief(self.state.signal);
+    self.state.adaptationThreshold = computeThreshold();
+    self.state.chinaResponse = null;
+    self.state.outcomeType = null;
+    self.state.revealed = false;
+    if(self.role === "US" && self.state.signal !== "K"){
+      self.state.chinaResponse = autoChinaResponse();
+      self.state.outcomeType = classify(self.state.signal, self.state.chinaResponse);
+      self.state.revealed = true;
+      window.signalingLastState = clone(self.state);
+      commitRun();
+    }
+  }
+
+  function reset(){
+    var initial = get(self.spec, ["initial_game_state"], {});
+    self.role = window.signalingRole || self.role || "US";
+    self.role = self.role === "US" ? "US" : "China";
+    self.state = {
+      usType: Math.random() > 0.5 ? "H" : "L",
+      signal: null,
+      priorHighResolve: initial.priorHighResolve != null ? initial.priorHighResolve : 0.5,
+      adaptationCapacity: initial.adaptationCapacity != null ? initial.adaptationCapacity : 0.5,
+      loopholes: initial.loopholes != null ? initial.loopholes : 0.3,
+      noise: initial.noise != null ? initial.noise : 0.2,
+      costKey: initial.costKey || "medium",
+      chinaBelief: initial.priorHighResolve != null ? initial.priorHighResolve : 0.5,
+      adaptationThreshold: 0.6,
+      chinaResponse: null,
+      outcomeType: null,
+      oversightStep: 0,
+      revealed: false
+    };
+    self.state.adaptationThreshold = computeThreshold();
+    prepareSelectedSignal();
+    self.render();
+  }
+
+  // --- interactivity: inline signal switch + live "world" knobs ---
+
+  function switchSignal(id){
+    window.signalingSelectedSignal = id;
+    self.state.signal = id;
+    self.state.oversightStep = 0;
+    self.state.adaptationThreshold = computeThreshold();
+    if(id === "K"){
+      self.state.chinaBelief = self.state.priorHighResolve;
+      self.state.revealed = false;
+      self.state.chinaResponse = null;
+      self.state.outcomeType = null;
+    }else{
+      self.state.chinaBelief = computeBelief(id);
+      if(self.role === "US"){
+        self.state.chinaResponse = autoChinaResponse();
+        self.state.outcomeType = classify(id, self.state.chinaResponse);
+        self.state.revealed = true;
+        window.signalingLastState = clone(self.state);
+        commitRun();
+      }else{
+        self.state.revealed = false;
+        self.state.chinaResponse = null;
+        self.state.outcomeType = null;
+      }
+    }
+    self.render();
+    publish("signalingRoleGame/stateChanged", [clone(self.state)]);
+  }
+
+  // Recompute + patch only the live nodes, so dragging a slider never
+  // rebuilds (and steals focus from) the slider being dragged.
+  function liveUpdate(){
+    self.state.adaptationThreshold = computeThreshold();
+    if(self.state.signal){
+      self.state.chinaBelief = self.state.signal === "K"
+        ? computeOversightBelief(self.state.oversightStep)
+        : computeBelief(self.state.signal);
+    }else{
+      self.state.chinaBelief = self.state.priorHighResolve;
+    }
+    if(self.state.revealed){
+      if(self.role === "US") self.state.chinaResponse = autoChinaResponse();
+      self.state.outcomeType = classify(self.state.signal, self.state.chinaResponse);
+      window.signalingLastState = clone(self.state);
+      previewRun();
+    }
+
+    var fill = self.dom.querySelector(".role-belief-fill");
+    if(fill) fill.style.width = pct(self.state.chinaBelief);
+    var thr = self.dom.querySelector(".role-threshold");
+    if(thr) thr.style.left = pct(self.state.adaptationThreshold);
+    var bval = self.dom.querySelector(".role-belief-label b");
+    if(bval) bval.textContent = pct(self.state.chinaBelief);
+    self._shownBelief = self.state.chinaBelief;
+    var explain = self.dom.querySelector(".role-belief-explain");
+    if(explain && explain.parentNode) explain.parentNode.replaceChild(renderBeliefExplainer(), explain);
+    var reveal = self.dom.querySelector(".role-reveal");
+    if(reveal && reveal.parentNode) reveal.parentNode.replaceChild(renderReveal(), reveal);
+    var flow = self.dom.querySelector(".role-game-flow");
+    if(flow && flow.parentNode) flow.parentNode.replaceChild(renderFlow(), flow);
+  }
+
+  // Abstract face shown DURING play; real-world identity revealed only in the result.
+  function signalFace(id){
+    return ({
+      E: { short: "Costly move", abstract: "A big upfront sacrifice", tag: "costly, hard to fake",
+           real: "Export Controls",
+           realBlurb: "banning advanced AI chips — the Oct 2022 BIS rules and NVIDIA's H20 write-down." },
+      T: { short: "Cheap promise", abstract: "A cheap public promise", tag: "cheap, easy to copy",
+           real: "Training-Compute Thresholds",
+           realBlurb: "a FLOP line like EO 14110's 10^26 — which the next administration simply revoked." },
+      K: { short: "Slow burn", abstract: "Repeated enforcement", tag: "builds over time",
+           real: "Provider Oversight",
+           realBlurb: "KYC on cloud providers, audits, and enforcement that has to keep repeating." }
+    })[id] || { short: id, abstract: id, tag: "", real: id, realBlurb: "" };
+  }
+
+  // --- Equilibrium Lab: classify the run + remember it across rounds ---
+
+  function currentEquilibrium(){
+    if(!window.SignalingWorld || !self.state.signal) return null;
+    var lik = likelihoods(self.state.signal);
+    return SignalingWorld.classifyEquilibrium(self.state.chinaBelief, self.state.adaptationThreshold, lik.H, lik.L);
+  }
+
+  function buildRun(){
+    var face = signalFace(self.state.signal);
+    return {
+      signal: self.state.signal,
+      signalReal: face.real,
+      response: self.state.chinaResponse,
+      usType: self.state.usType,
+      belief: self.state.chinaBelief,
+      threshold: self.state.adaptationThreshold,
+      costKey: self.state.costKey,
+      role: self.role,
+      eq: currentEquilibrium()
+    };
+  }
+
+  // previewRun: live recompute (slider drag) — no new round.
+  function previewRun(){
+    if(!window.SignalingWorld || !self.state.signal || !self.state.revealed) return;
+    self._lastEq = currentEquilibrium();
+    SignalingWorld.setLastRun(buildRun());
+  }
+
+  // commitRun: an actual play resolved — bumps the round counter + log.
+  function commitRun(){
+    if(!window.SignalingWorld || !self.state.signal) return;
+    self._lastEq = currentEquilibrium();
+    SignalingWorld.commitRun(buildRun());
+  }
+
+  function tryAnotherWorld(){
+    if(window.SignalingWorld){
+      var w = SignalingWorld.randomize();
+      self.state.priorHighResolve = w.prior;
+      self.state.adaptationCapacity = w.adaptationCapacity;
+      self.state.loopholes = w.loopholes;
+      self.state.costKey = w.costKey;
+      self.state.usType = w.usType;
+    }
+    self.state.adaptationThreshold = computeThreshold();
+
+    if(self.state.signal === "K"){
+      // restart the slow-burn sequence in the new world
+      self.state.oversightStep = 0;
+      self.state.chinaBelief = self.state.priorHighResolve;
+      self.state.revealed = false;
+      self.state.chinaResponse = null;
+      self.state.outcomeType = null;
+    }else if(self.state.signal){
+      self.state.chinaBelief = computeBelief(self.state.signal);
+      if(self.role === "US"){
+        self.state.chinaResponse = autoChinaResponse();
+        self.state.outcomeType = classify(self.state.signal, self.state.chinaResponse);
+        self.state.revealed = true;
+        window.signalingLastState = clone(self.state);
+        commitRun();
+      }else{
+        // China mode: keep the same signal, hide type again for a fresh decision
+        self.state.revealed = false;
+        self.state.chinaResponse = null;
+        self.state.outcomeType = null;
+      }
+    }else{
+      self.state.chinaBelief = self.state.priorHighResolve;
+    }
+    self.render();
+    publish("signalingRoleGame/stateChanged", [clone(self.state)]);
+  }
+
+  function renderSignalSwitch(){
+    var wrap = el("div", "role-signal-switch");
+    var ids = signalIds();
+    for(var i = 0; i < ids.length; i++){
+      (function(id){
+        var face = signalFace(id);
+        var b = el("button", "role-switch-btn" + (self.state.signal === id ? " active" : ""));
+        b.type = "button";
+        b.title = face.tag;
+        b.appendChild(el("b", "", face.short));
+        b.appendChild(el("small", "", face.tag));
+        b.addEventListener("click", function(){ switchSignal(id); });
+        wrap.appendChild(b);
+      })(ids[i]);
+    }
+    return wrap;
+  }
+
+  function renderKnobs(){
+    var defs = [
+      { key: "priorHighResolve", label: "Prior — China's hunch the U.S. is High" },
+      { key: "adaptationCapacity", label: "China's adaptation capacity" },
+      { key: "loopholes", label: "Loophole availability" }
+    ];
+    var knobs = el("div", "role-knobs");
+    var knobsHead = el("div", "role-knobs-head");
+    knobsHead.appendChild(el("p", "role-knobs-title", "drag to change the world"));
+    knobsHead.appendChild(button("role-world-button", "🎲 randomize", tryAnotherWorld));
+    knobs.appendChild(knobsHead);
+    for(var i = 0; i < defs.length; i++){
+      (function(def){
+        var knob = el("label", "role-knob");
+        var top = el("div", "role-knob-top");
+        top.appendChild(el("span", "", def.label));
+        var val = el("b", "", pct(self.state[def.key]));
+        top.appendChild(val);
+        knob.appendChild(top);
+        var input = document.createElement("input");
+        input.type = "range";
+        input.min = 0; input.max = 1; input.step = 0.01;
+        input.value = self.state[def.key];
+        input.addEventListener("input", function(){
+          self.state[def.key] = Number(input.value);
+          val.textContent = pct(self.state[def.key]);
+          liveUpdate();
+        });
+        knob.appendChild(input);
+        knobs.appendChild(knob);
+      })(defs[i]);
+    }
+    return knobs;
+  }
+
+  function tweenNumber(node, from, to){
+    if(!node) return;
+    var start = null, dur = 430;
+    function step(ts){
+      if(start == null) start = ts;
+      var t = Math.min(1, (ts - start) / dur);
+      node.textContent = pct(from + (to - from) * t);
+      if(t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function chinaMood(){
+    var b = self.state.chinaBelief;
+    if(b < 0.40) return "skeptical 😐";
+    if(b < 0.58) return "unsure 🤨";
+    if(b < 0.78) return "fairly convinced 🤔";
+    return "convinced you mean it 😮";
+  }
+
+  function beliefWhy(){
+    return {
+      E: "A big upfront sacrifice is expensive and hard to fake — a bluffer wouldn't pay it — so China's belief jumps.",
+      T: "A cheap public promise is easy to copy; anyone can announce it, so China barely moves off its hunch.",
+      K: "Repeated enforcement looks modest at first; its credibility only builds if it keeps happening."
+    }[self.state.signal] || "Pick a move to see how China reads it.";
+  }
+
+  function verdictLine(){
+    var b = self.state.chinaBelief, thr = self.state.adaptationThreshold;
+    if(b >= thr){
+      return "Belief " + pct(b) + " is past the adapt line " + pct(thr) + " → China ADAPTS: it races to build its own substitutes.";
+    }
+    return "Belief " + pct(b) + " is below the adapt line " + pct(thr) + " → China WAITS to see if you follow through.";
+  }
+
+  function chinaVerdict(){
+    var high = self.state.usType === "H";
+    var adapted = self.state.chinaResponse === "A";
+    if(high && adapted)   return "You read it right — the U.S. really was High Resolve. Adapting was the smart call.";
+    if(high && !adapted)  return "Risky — the U.S. really was High Resolve. Waiting can leave you exposed.";
+    if(!high && !adapted) return "Nice read — it was a Low-Resolve bluff. Waiting saved you the cost of adapting.";
+    return "It was only a Low-Resolve bluff — you adapted to a feint and paid costs you didn't need to.";
+  }
+
+  function renderBeliefExplainer(){
+    var box = el("div", "role-belief-explain");
+    box.appendChild(el("p", "role-mood", "China looks " + chinaMood()));
+    box.appendChild(el("p", "role-why", beliefWhy()));
+    if(self.state.signal) box.appendChild(el("p", "role-verdict", verdictLine()));
+    return box;
+  }
+
+  function renderFlow(){
+    var flow = el("div", "role-game-flow");
+    var names = get(self.spec, ["game_model", "players", "US", "hidden_type", "values"], {});
+    var typeText = self.role === "US" || self.state.revealed ? (names[self.state.usType] || self.state.usType) : "secret";
+    var sig = self.state.signal ? signalFace(self.state.signal).short : "?";
+    var response = self.state.chinaResponse === "A" ? "Adapt" : (self.state.chinaResponse === "W" ? "Wait" : "?");
+    var nodes = [
+      ["Nature", typeText],
+      ["U.S.", self.role === "China" ? "sent signal" : "you choose"],
+      ["Signal", sig],
+      ["China", self.role === "China" ? (self.state.chinaResponse ? response : "your move") : response],
+      ["Outcome", self.state.revealed ? (outcome().title || "revealed") : "?"]
+    ];
+    for(var i=0; i<nodes.length; i++){
+      var node = el("div", "role-flow-node");
+      node.appendChild(el("span", "", nodes[i][0]));
+      node.appendChild(el("b", "", nodes[i][1]));
+      flow.appendChild(node);
+      if(i < nodes.length - 1) flow.appendChild(el("div", "role-flow-arrow", "->"));
+    }
+    return flow;
+  }
+
+  function renderBeliefBar(){
+    var from = (self._shownBelief == null) ? self.state.chinaBelief : self._shownBelief;
+    var target = self.state.chinaBelief;
+
+    var wrap = el("div", "role-belief");
+    var label = el("div", "role-belief-label");
+    label.appendChild(el("span", "", "China's belief the U.S. is serious"));
+    var valNode = el("b", "", pct(from));
+    label.appendChild(valNode);
+    wrap.appendChild(label);
+
+    var track = el("div", "role-belief-track");
+    var fill = el("div", "role-belief-fill");
+    fill.style.width = pct(from);
+    track.appendChild(fill);
+    var marker = el("div", "role-threshold");
+    marker.style.left = pct(self.state.adaptationThreshold);
+    track.appendChild(marker);
+    wrap.appendChild(track);
+
+    var legend = el("div", "role-belief-legend");
+    legend.appendChild(el("span", "", "← China waits"));
+    legend.appendChild(el("span", "", "adapts →"));
+    wrap.appendChild(legend);
+
+    // animate the fill + count the number up from the previous value
+    requestAnimationFrame(function(){ fill.style.width = pct(target); });
+    tweenNumber(valNode, from, target);
+    self._shownBelief = target;
+    return wrap;
+  }
+
+  function renderDecision(){
+    var building = self.role === "US" && self.state.signal === "K" && !self.state.revealed;
+    var decision = el("section", "role-decision" + (building ? " role-decision-build" : ""));
+    if(self.role === "US"){
+      decision.appendChild(el("p", "role-small-label", "your decision"));
+      decision.appendChild(el("h3", "", building ? "Keep enforcing" : "Move sent"));
+      decision.appendChild(el("p", "role-observed", signalFace(self.state.signal).abstract));
+      if(building){
+        decision.appendChild(renderOversightSequence());
+      }
+      return decision;
+    }
+
+    if(self.state.revealed){
+      decision.appendChild(el("p", "role-small-label", "your decision"));
+      decision.appendChild(el("h3", "", "You chose " + (self.state.chinaResponse === "A" ? "Adapt" : "Wait")));
+      decision.appendChild(el("p", "role-observed", "Now Nature's card is revealed →"));
+      return decision;
+    }
+
+    decision.appendChild(el("p", "role-small-label", "your decision"));
+    decision.appendChild(el("h3", "", signalFace(self.state.signal).abstract));
+    decision.appendChild(el("p", "role-observed", "You see the move, not the U.S. type. Adapt now, or wait?"));
+    if(self.state.signal === "K" && self.state.oversightStep < 3){
+      decision.appendChild(renderOversightSequence());
+      return decision;
+    }
+    var responses = el("div", "role-response-buttons");
+    responses.appendChild(button("role-main-button", "Adapt", function(){ chooseResponse("A"); }));
+    responses.appendChild(button("role-main-button", "Wait", function(){ chooseResponse("W"); }));
+    decision.appendChild(responses);
+    return decision;
+  }
+
+  function renderOversightSequence(){
+    var steps = oversightSteps();
+    var wrap = el("div", "role-oversight-sequence");
+    var row = el("div", "role-oversight-steps");
+    for(var i=0; i<steps.length; i++){
+      var stepClass = "role-oversight-step";
+      if(self.state.oversightStep > i) stepClass += " done";
+      if(self.state.oversightStep === i) stepClass += " current";
+      var step = el("div", stepClass);
+      step.appendChild(el("span", "", String(i + 1)));
+      step.appendChild(el("b", "", steps[i].short || steps[i].label));
+      row.appendChild(step);
+    }
+    wrap.appendChild(row);
+
+    if(self.state.oversightStep < 3){
+      var nextStep = steps[self.state.oversightStep];
+      wrap.appendChild(button("role-main-button role-oversight-button", nextStep.label, advanceOversight));
+      wrap.appendChild(el("p", "role-oversight-copy", nextStep.copy));
+    }
+
+    return wrap;
+  }
+
+  function renderWorldChips(){
+    var row = el("div", "role-world-chips");
+    var env = window.SignalingWorld && SignalingWorld.COST_ENVIRONMENTS[self.state.costKey];
+    var round = (window.SignalingWorld && SignalingWorld.state.round) || 1;
+    row.appendChild(el("span", "role-chip", "round " + round));
+    row.appendChild(el("span", "role-chip", "world: " + (env ? env.label : self.state.costKey)));
+    if(window.SignalingWorld){
+      row.appendChild(el("span", "role-chip", "signal " + SignalingWorld.credibility(self.state.chinaBelief)));
+    }
+    return row;
+  }
+
+  function renderRoomMeter(room){
+    var wrap = el("div", "role-room");
+    var head = el("div", "role-room-head");
+    head.appendChild(el("span", "", "Vietnam room to move"));
+    head.appendChild(el("b", "", pct(room)));
+    wrap.appendChild(head);
+    var track = el("div", "role-room-track");
+    var fill = el("div", "role-room-fill");
+    fill.style.width = pct(room);
+    track.appendChild(fill);
+    wrap.appendChild(track);
+    return wrap;
+  }
+
+  function renderTryButtons(){
+    // single prominent retry; world-randomize is the small link by the knobs
+    var row = el("div", "role-try-buttons");
+    row.appendChild(button("role-try-button", "try another move", handleTryAnotherSignal));
+    return row;
+  }
+
+  function renderReveal(){
+    var reveal = el("section", "role-reveal");
+    if(!self.state.revealed){
+      reveal.appendChild(el("div", "role-placeholder", self.role === "US" ? "China's response appears after you pick a move." : "The U.S. type is revealed after you choose."));
+      return reveal;
+    }
+
+    var names = get(self.spec, ["game_model", "players", "US", "hidden_type", "values"], {});
+    var face = signalFace(self.state.signal);
+    var eq = currentEquilibrium();
+
+    reveal.appendChild(el("p", "role-small-label", self.role === "China" ? "reveal" : "result"));
+    if(self.role === "China"){
+      reveal.appendChild(el("h3", "", "U.S. was " + (names[self.state.usType] || self.state.usType)));
+    }else{
+      reveal.appendChild(el("h3", "", "China " + (self.state.chinaResponse === "A" ? "adapts" : "waits")));
+    }
+    reveal.appendChild(el("p", "role-outcome-line", self.role === "China" ? chinaVerdict() : outcomeLine()));
+
+    // Equilibrium Lab verdict: separating / pooling / ambiguous.
+    if(eq){
+      var verdict = el("p", "role-eq-verdict role-eq-" + eq.key);
+      verdict.appendChild(el("b", "", eq.title + " — "));
+      verdict.appendChild(document.createTextNode(eq.text.replace(/^[^:]+:\s*/, "")));
+      reveal.appendChild(verdict);
+    }
+
+    // The payoff: name the real-world policy they just played.
+    var policy = el("div", "role-policy-reveal");
+    policy.appendChild(el("span", "role-policy-kicker", "your move, in the real world →"));
+    policy.appendChild(el("b", "", face.real));
+    policy.appendChild(el("p", "", face.realBlurb));
+    reveal.appendChild(policy);
+
+    // Downstream readout: world chips + Vietnam's room to move.
+    if(window.SignalingWorld){
+      reveal.appendChild(renderWorldChips());
+      var meters = SignalingWorld.downstreamMeters(buildRun(), SignalingWorld.vietnamLeverCount());
+      reveal.appendChild(renderRoomMeter(meters.roomToMove));
+    }else{
+      reveal.appendChild(el("p", "role-vietnam", "Vietnam: " + vietnamLine()));
+    }
+
+    reveal.appendChild(renderTryButtons());
+    return reveal;
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+    if(!self.spec){
+      self.dom.appendChild(el("div", "scenario-loading", "loading..."));
+      return;
+    }
+
+    var page = el("div", "role-game-page");
+    var header = el("header", "role-game-header");
+    var title = el("div");
+    title.appendChild(el("p", "role-eyebrow", self.role === "US" ? "Play as the U.S. Sender" : "Play as China Receiver"));
+    title.appendChild(el("h2", "", self.role === "US" ? "Choose a compute signal" : "Respond under uncertainty"));
+    title.appendChild(el("p", "", self.role === "US" ? "You see the U.S. type. China updates and responds automatically." : "Nature hides the U.S. type. You see only the signal and belief."));
+    header.appendChild(title);
+    var actions = el("div", "scenario-header-buttons");
+    actions.appendChild(button("scenario-reset", "roles", function(){ publish("slideshow/goto", ["signaling_role_choice"]); }));
+    actions.appendChild(button("scenario-next", "next", function(){ publish("slideshow/next"); }));
+    header.appendChild(actions);
+    page.appendChild(header);
+
+    var grid = el("div", "role-game-grid");
+
+    var left = el("div", "role-left");
+    left.appendChild(renderFlow());
+    left.appendChild(renderKnobs());
+    grid.appendChild(left);
+
+    var center = el("div", "role-game-center");
+    if(self.role === "US") center.appendChild(renderSignalSwitch());
+    var building = (self.state.signal === "K" && !self.state.revealed); // oversight mini-game in progress
+    if(self.state.signal){
+      center.appendChild(renderBeliefBar());
+      if(!building) center.appendChild(renderBeliefExplainer());
+    }
+    // US: the switch + belief + reveal already report the move, so the decision block
+    // only appears for the K oversight sequence. China always decides here (Adapt/Wait).
+    if(self.role === "China" || building){
+      center.appendChild(renderDecision());
+    }
+    grid.appendChild(center);
+
+    grid.appendChild(renderReveal());
+    page.appendChild(grid);
+    self.dom.appendChild(page);
+  };
+
+  self.loadSpec = function(){
+    fetch(self.specPath).then(function(response){
+      if(!response.ok) throw new Error("Could not load " + self.specPath);
+      return response.json();
+    }).then(function(spec){
+      self.spec = spec;
+      reset();
+    }).catch(function(err){
+      console.error(err);
+      self.dom.innerHTML = "";
+      self.dom.appendChild(el("div", "scenario-loading", "Could not load role game spec."));
+    });
+  };
+
+  listen(self, "signalingRoleGame/reset", reset);
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){
+    unlisten(self);
+    _remove(self);
+  };
+
+  self.render();
+  self.loadSpec();
+}
+
+window.SignalingRoleGame = SignalingRoleGame;
+
+function SignalingGovernanceEnding(config){
+
+  var self = this;
+  self.id = config.id || "signaling_governance_ending";
+  self.selected = 0;
+
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_governance_ending";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = (config.width || 960) + "px";
+  self.dom.style.height = (config.height || 540) + "px";
+
+  var takeaways = [
+    {
+      title: "More than technical rules",
+      symbol: "1",
+      copy: "Compute governance also communicates resolve, risk, and commitment."
+    },
+    {
+      title: "Policies are signals",
+      symbol: "2",
+      copy: "Export controls, thresholds, and provider oversight change what others believe."
+    },
+    {
+      title: "Credibility can bite back",
+      symbol: "3",
+      copy: "If China believes the signal is durable, waiting can look dangerous, so adaptation speeds up."
+    },
+    {
+      title: "Vietnam keeps room to move",
+      symbol: "4",
+      copy: "Flexible commitment means diversified compute access, interoperable standards, and sequenced governance capacity."
+    }
+  ];
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function button(className, text, onClick){
+    var node = el("button", className, text);
+    node.type = "button";
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function signalName(signalId){
+    var names = {
+      E: "export controls",
+      T: "thresholds",
+      K: "provider oversight"
+    };
+    return names[signalId] || "a compute signal";
+  }
+
+  function responseName(response){
+    return response === "A" ? "adapt" : (response === "W" ? "wait" : "respond");
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+    var last = window.signalingLastState || {};
+    var page = el("div", "ending-page");
+
+    var header = el("header", "ending-header");
+    var title = el("div");
+    title.appendChild(el("p", "role-eyebrow", "What this means for compute governance today"));
+    title.appendChild(el("h2", "", "Signals shape the game"));
+    title.appendChild(el("p", "", last.signal ? "You just saw " + signalName(last.signal) + " make China " + responseName(last.chinaResponse) + "." : "Play a role, then come back to read the lesson through that outcome."));
+    header.appendChild(title);
+    var actions = el("div", "scenario-header-buttons");
+    actions.appendChild(button("scenario-reset", "roles", function(){ publish("slideshow/goto", ["signaling_role_choice"]); }));
+    actions.appendChild(button("scenario-next", "next", function(){ publish("slideshow/next"); }));
+    header.appendChild(actions);
+    page.appendChild(header);
+
+    var body = el("div", "ending-body");
+    var tiles = el("div", "ending-tiles");
+    for(var i=0; i<takeaways.length; i++){
+      (function(index){
+        var item = takeaways[index];
+        var tile = button("ending-tile" + (self.selected === index ? " selected" : ""), "", function(){
+          self.selected = index;
+          self.render();
+        });
+        tile.appendChild(el("span", "", item.symbol));
+        tile.appendChild(el("b", "", item.title));
+        tiles.appendChild(tile);
+      })(i);
+    }
+    body.appendChild(tiles);
+
+    var card = el("section", "ending-card");
+    card.appendChild(el("p", "role-small-label", "takeaway"));
+    card.appendChild(el("h3", "", takeaways[self.selected].title));
+    card.appendChild(el("p", "", takeaways[self.selected].copy));
+    body.appendChild(card);
+    page.appendChild(body);
+
+    self.dom.appendChild(page);
+  };
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){ _remove(self); };
+
+  self.render();
+}
+
+window.SignalingGovernanceEnding = SignalingGovernanceEnding;
+
+function SignalingVietnamHedge(config){
+
+  var self = this;
+  self.id = config.id || "signaling_vietnam";
+  self.selected = 0;
+  // Lever state is shared with SignalingWorld so "room to move" persists across
+  // the role game and this screen (and counts toward the downstream meters).
+  self.clicked = (window.SignalingWorld && SignalingWorld.state.vietnamLevers) || {};
+
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_scenario signaling_vietnam_hedge";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = (config.width || 960) + "px";
+  self.dom.style.height = (config.height || 540) + "px";
+
+  // What Vietnam observes in the U.S.–China compute game (it can't pick these).
+  var observed = ["Export controls", "Threshold governance", "Provider oversight"];
+
+  // Strategic pressure on Vietnam. Each lever (below) eases one of these.
+  var pressures = [
+    { label: "Compute dependence", base: 0.82, eased: 0.46 },
+    { label: "Energy strain",      base: 0.70, eased: 0.40 },
+    { label: "Standards lock-in",  base: 0.60, eased: 0.32 },
+    { label: "Governance overload",base: 0.76, eased: 0.38 }
+  ];
+
+  // Vietnam's flexible-commitment levers. relieves → index into `pressures`.
+  var levers = [
+    {
+      title: "Diversify compute access", formal: "Compute resilience", relieves: 0,
+      ifthen: "If chip and cloud access becomes conditional, Vietnam should avoid dependence on a single supplier, cloud, or geopolitical corridor.",
+      body: "Vietnam should keep procurement, cloud use, and infrastructure planning portable across suppliers. One external shock should not freeze the whole AI ecosystem."
+    },
+    {
+      title: "Build modular infrastructure", formal: "Energy-aware modular build", relieves: 1,
+      ifthen: "If frontier-scale compute is too costly and energy-intensive, Vietnam should build smaller, sector-specific clusters.",
+      body: "Vietnam should build smaller, sector-specific clusters for manufacturing, logistics, agriculture, education, climate, and public administration instead of chasing frontier-scale compute."
+    },
+    {
+      title: "Keep model options open", formal: "Model pluralism", relieves: 2,
+      ifthen: "If global AI standards fragment, Vietnam should preserve interoperability and avoid pre-commitment.",
+      body: "Vietnam should mix proprietary models, open-weight models, and domestic fine-tuning according to risk level. The goal is interoperability, not dependence on one ecosystem."
+    },
+    {
+      title: "Regulate in stages", formal: "Institutional sequencing", relieves: 3,
+      ifthen: "If governance capacity is limited, Vietnam should begin with visible and enforceable rules before expanding.",
+      body: "Vietnam should begin with provider oversight, documentation, and high-risk use cases, then expand as institutional capacity improves."
+    }
+  ];
+
+  var SYNTHESIS = "Flexible commitment is not neutrality. Vietnam still commits to credible governance, trusted infrastructure, and responsible deployment. But it avoids locking itself into a single supplier, single standard, or single model ecosystem.";
+
+  // Faint river-delta / grid + server-node / cable motif behind the board.
+  var BG_SVG =
+    '<svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' +
+      '<g fill="none" stroke="#315f7c" stroke-width="1.4" opacity="0.5">' +
+        '<path d="M-20 150 C 220 120 360 230 540 220 C 720 210 860 300 1000 280"/>' +
+        '<path d="M-20 150 C 200 200 320 320 470 360 C 600 396 760 430 1000 430"/>' +
+        '<path d="M540 220 C 600 280 640 360 700 540"/>' +
+        '<path d="M470 360 C 520 420 540 480 560 540"/>' +
+      '</g>' +
+      '<g stroke="#7a3f18" stroke-width="1.2" opacity="0.4">' +
+        '<line x1="120" y1="80" x2="120" y2="470"/><line x1="360" y1="60" x2="360" y2="500"/>' +
+        '<line x1="600" y1="60" x2="600" y2="500"/><line x1="840" y1="80" x2="840" y2="470"/>' +
+      '</g>' +
+      '<g fill="#315f7c" opacity="0.5">' +
+        '<circle cx="120" cy="150" r="4"/><circle cx="360" cy="220" r="4"/>' +
+        '<circle cx="540" cy="220" r="4"/><circle cx="600" cy="360" r="4"/>' +
+        '<circle cx="470" cy="360" r="4"/><circle cx="840" cy="280" r="4"/>' +
+      '</g>' +
+    '</svg>';
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function button(className, onClick){
+    var node = el("button", className);
+    node.type = "button";
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function zoneLabel(text){
+    return el("p", "vh-zone-label", text);
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+    var page = el("div", "vh-page");
+
+    var bg = el("div", "vh-bg");
+    bg.innerHTML = BG_SVG;
+    page.appendChild(bg);
+
+    var inner = el("div", "vh-inner");
+
+    // ---- header ----
+    var header = el("header", "vh-header");
+    var title = el("div", "vh-title");
+    title.appendChild(el("p", "role-eyebrow", "The downstream audience"));
+    title.appendChild(el("h2", "", "Vietnam's move: flexible commitment"));
+    title.appendChild(el("p", "vh-sub", "Vietnam observes the U.S.–China compute game from the outside. It cannot choose America's signal or China's response. But it can choose how fragile or flexible its own AI ecosystem becomes."));
+    title.appendChild(el("p", "vh-tagline", "Stay credible. Keep options open."));
+    header.appendChild(title);
+    var actions = el("div", "scenario-header-buttons");
+    actions.appendChild((function(){
+      var b = button("scenario-next", function(){ publish("slideshow/next"); });
+      b.textContent = "next";
+      return b;
+    })());
+    header.appendChild(actions);
+    inner.appendChild(header);
+
+    // ---- connect to the previous run + Vietnam room to move ----
+    if(window.SignalingWorld){
+      var status = el("div", "vh-status");
+      status.appendChild(el("p", "vh-runline", SignalingWorld.lastRunSentence()));
+
+      var meters = SignalingWorld.downstreamMeters(SignalingWorld.state.lastRun, SignalingWorld.vietnamLeverCount());
+      var roomWrap = el("div", "vh-room");
+      var roomHead = el("div", "vh-room-head");
+      roomHead.appendChild(el("span", "", "Vietnam room to move"));
+      roomHead.appendChild(el("b", "", Math.round(meters.roomToMove * 100) + "%"));
+      roomWrap.appendChild(roomHead);
+      var roomTrack = el("div", "vh-room-track");
+      var roomFill = el("div", "vh-room-fill");
+      roomFill.style.width = Math.round(meters.roomToMove * 100) + "%";
+      roomTrack.appendChild(roomFill);
+      roomWrap.appendChild(roomTrack);
+      status.appendChild(roomWrap);
+
+      inner.appendChild(status);
+    }
+
+    // ---- three-zone board ----
+    var board = el("div", "vh-board");
+
+    // zone 1 — observed signal
+    var z1 = el("div", "vh-zone vh-observed");
+    z1.appendChild(zoneLabel("Observed signal"));
+    var obsStack = el("div", "vh-obs-stack");
+    for(var o = 0; o < observed.length; o++){
+      obsStack.appendChild(el("div", "vh-obs-chip", observed[o]));
+    }
+    z1.appendChild(obsStack);
+    board.appendChild(z1);
+
+    board.appendChild(el("div", "vh-arrow", "→"));
+
+    // zone 2 — strategic pressure (meters)
+    var z2 = el("div", "vh-zone vh-pressure");
+    z2.appendChild(zoneLabel("Strategic pressure"));
+    var meters = el("div", "vh-meters");
+    var activeRelief = self.clicked[self.selected] ? levers[self.selected].relieves : -1;
+    for(var p = 0; p < pressures.length; p++){
+      (function(pi){
+        var pr = pressures[pi];
+        var eased = !!self.clicked[pi];           // lever index maps 1:1 to pressure index
+        var level = eased ? pr.eased : pr.base;
+        var row = el("div", "vh-meter" + (pi === activeRelief ? " active" : "") + (eased ? " eased" : ""));
+        var head = el("div", "vh-meter-head");
+        head.appendChild(el("span", "vh-meter-name", pr.label));
+        head.appendChild(el("span", "vh-meter-tag", eased ? "managed" : ""));
+        row.appendChild(head);
+        var track = el("div", "vh-meter-track");
+        var fill = el("div", "vh-meter-fill");
+        fill.style.width = Math.round(level * 100) + "%";
+        track.appendChild(fill);
+        row.appendChild(track);
+        meters.appendChild(row);
+      })(p);
+    }
+    z2.appendChild(meters);
+    board.appendChild(z2);
+
+    board.appendChild(el("div", "vh-arrow", "→"));
+
+    // zone 3 — Vietnam's response (levers)
+    var z3 = el("div", "vh-zone vh-response");
+    z3.appendChild(zoneLabel("Vietnam's response"));
+    var leverList = el("div", "vh-levers");
+    for(var i = 0; i < levers.length; i++){
+      (function(index){
+        var lv = levers[index];
+        var cls = "vh-lever";
+        if(self.selected === index) cls += " selected";
+        if(self.clicked[index]) cls += " opened";
+        var tile = button(cls, function(){
+          self.selected = index;
+          self.clicked[index] = true;
+          self.render();
+        });
+        if(self.selected === index){
+          tile.appendChild(el("span", "vh-lever-flag", "selected lever"));
+        }
+        tile.appendChild(el("b", "", lv.title));
+        leverList.appendChild(tile);
+      })(i);
+    }
+    z3.appendChild(leverList);
+    board.appendChild(z3);
+
+    inner.appendChild(board);
+
+    // ---- explanation panel (updates with selected lever) ----
+    var cur = levers[self.selected];
+    var card = el("section", "vh-card");
+    var cardHead = el("div", "vh-card-head");
+    cardHead.appendChild(el("p", "role-small-label", "formal layer"));
+    cardHead.appendChild(el("p", "vh-formal", cur.formal));
+    card.appendChild(cardHead);
+    card.appendChild(el("h3", "", cur.title));
+    card.appendChild(el("p", "vh-ifthen", cur.ifthen));
+    card.appendChild(el("p", "vh-body-copy", cur.body));
+
+    // synthesis appears once all four levers have been opened
+    var allOpened = true;
+    for(var k = 0; k < levers.length; k++){ if(!self.clicked[k]){ allOpened = false; break; } }
+    if(allOpened){
+      var note = el("p", "vh-synthesis", SYNTHESIS);
+      card.appendChild(note);
+    }
+    inner.appendChild(card);
+
+    page.appendChild(inner);
+    self.dom.appendChild(page);
+  };
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){ _remove(self); };
+
+  self.render();
+}
+
+window.SignalingVietnamHedge = SignalingVietnamHedge;

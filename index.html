@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Signals of Compute Power</title>
+	<meta name="description" content="An interactive signaling game of U.S.–China compute governance and Vietnam's policy path.">
+
+	<link rel="icon" type="image/png" href="favicon.png">
+
+	<!-- Styles (FuturaHandwritten.ttf is loaded via @font-face inside slides.css) -->
+	<link rel="stylesheet" type="text/css" href="css/slides.css">
+	<link rel="stylesheet" type="text/css" href="css/balloon.css">
+	<link rel="stylesheet" type="text/css" href="css/signaling-scenarios.css">
+
+</head>
+<body>
+
+	<!-- Shown until main.js boots / assets finish loading -->
+	<div id="preloader">loading...</div>
+
+	<!-- Stage -->
+	<div id="main">
+
+		<!-- Sound toggle (structure matches #sound rules in slides.css) -->
+		<div id="sound" sound="on">
+			<div id="sound_icon"></div>
+			<div id="sound_on">sound on</div>
+			<div id="sound_off">sound off</div>
+		</div>
+
+		<!-- Social sharing buttons (populated by js/lib/sharing.js) -->
+		<div class="sharing"></div>
+
+		<!-- The slideshow renders here -->
+		<div id="slideshow_container">
+			<div id="slideshow"></div>
+		</div>
+
+	</div>
+
+	<!-- Footer: the slide-select dots render into #select -->
+	<div id="footer">
+		<div id="select"></div>
+	</div>
+
+
+	<!-- ============================================================= -->
+	<!--  SCRIPTS — load order matters: libs -> core -> sims -> slides -> main  -->
+	<!-- ============================================================= -->
+
+	<!-- Libraries -->
+	<script src="js/lib/helpers.js"></script>
+	<script src="js/lib/minpubsub.src.js"></script>
+	<script src="js/lib/q.js"></script>
+	<script src="js/lib/pegasus.js"></script>
+	<script src="js/lib/pixi.min.js"></script>
+	<script src="js/lib/howler.js"></script>
+	<script src="js/lib/tweenjs-0.6.2.min.js"></script>
+	<script src="js/lib/sharing.js"></script>
+
+	<!-- Core engine -->
+	<script src="js/core/Loader.js"></script>
+	<script src="js/core/Words.js"></script>
+	<script src="js/core/Slideshow.js"></script>
+	<script src="js/core/SlideSelect.js"></script>
+	<script src="js/core/Button.js"></script>
+	<script src="js/core/TextBox.js"></script>
+	<script src="js/core/IncDecNumber.js"></script>
+	<script src="js/core/Slider.js"></script>
+	<script src="js/core/Scratcher.js"></script>
+	<script src="js/core/Background.js"></script>
+	<script src="js/core/ImageBox.js"></script>
+	<script src="js/core/PayoffsUI.js"></script>
+	<script src="js/core/AdvancedPanel.js"></script>
+	<script src="js/core/SignalViz.js"></script>
+
+	<!-- Simulations / scenes -->
+	<script src="js/sims/SignalingWorld.js"></script>
+	<script src="js/sims/SignalingScenario.js"></script>
+	<script src="js/sims/Signaling.js"></script>
+	<script src="js/sims/Splash.js"></script>
+	<script src="js/sims/PD.js"></script>
+	<script src="js/sims/Iterated.js"></script>
+	<script src="js/sims/Tournament.js"></script>
+	<script src="js/sims/SandboxUI.js"></script>
+
+	<!-- Slides (the SLIDES array is populated by these, in filename order) -->
+	<script src="js/slides/1_Slides_Signaling.js"></script>
+
+	<!-- Bootstrap (must run last — builds the slideshow from SLIDES) -->
+	<script src="js/main.js"></script>
+
+</body>
+</html>
