@@ -6,21 +6,33 @@
 (function(){
 
   function boot(){
-    // Sound toggle (cosmetic — no audio engine bundled).
-    var sound = document.getElementById("sound");
-    if(sound){
-      sound.addEventListener("click", function(){
-        sound.setAttribute("sound", sound.getAttribute("sound") === "on" ? "off" : "on");
-      });
-    }
+    // Audio layer: preloads the sound pack, binds the #sound toggle, and maps
+    // varied SFX + looping music onto the game's interactions (see js/lib/sound.js).
+    if(window.Sound) Sound.init();
 
     if(window.Background) Background.mount(document.getElementById("main"));
 
     Slideshow.init(window.SLIDES);
     SlideSelect.init(window.SLIDES.length);
 
+    fitStage();
+    window.addEventListener("resize", fitStage);
+
     var pre = document.getElementById("preloader");
     if(pre) pre.style.display = "none";
+  }
+
+  // Scale the fixed 960×540 stage up/down to fill #main while preserving 16:9.
+  // The internal coordinate system is untouched — we only CSS-transform the
+  // stage, so every slide benefits and click/hit areas scale with it. #main is
+  // already height:calc(100% - 60px), so the footer space is reserved for us.
+  function fitStage(){
+    var main = document.getElementById("main");
+    var stage = document.getElementById("slideshow");
+    if(!main || !stage) return;
+    var scale = Math.min(main.clientWidth / 960, main.clientHeight / 540) * 0.98;
+    if(scale < 0.2) scale = 0.2;
+    stage.style.transform = "scale(" + scale + ")";
   }
 
   function start(){

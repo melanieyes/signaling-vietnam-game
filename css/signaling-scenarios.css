@@ -410,7 +410,9 @@
 .role-game-page{
 	width: 100%;
 	height: 100%;
-	padding: 22px 18px 18px;
+	display: flex;
+	flex-direction: column;
+	padding: 16px 18px 14px;
 	background: #fff;
 }
 .role-game-header{
@@ -418,39 +420,42 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 24px;
-	margin-bottom: 14px;
+	margin-bottom: 8px;
 }
 .role-game-header h2{
-	margin: 0 0 7px;
-	font-size: 39px;
+	margin: 0 0 5px;
+	font-size: 33px;
 	line-height: 0.95;
 	color: #315f7c;
 }
 .role-game-header p{
 	max-width: 620px;
 	margin: 0;
-	font-size: 20px;
-	line-height: 1.15;
+	font-size: 18px;
+	line-height: 1.12;
 }
+/* flexible game board: takes the height left after the header, instead of a
+   fixed 392px. The single 1fr row stretches the three columns to full height. */
 .role-game-grid{
 	display: grid;
-	grid-template-columns: 250px 1fr 326px;
-	grid-template-rows: 372px;
-	gap: 20px;
-	height: 372px;
+	grid-template-columns: 250px minmax(0, 1fr) 330px;
+	grid-template-rows: minmax(0, 1fr);
+	gap: 14px;
+	flex: 1 1 auto;
+	min-height: 0;
 	overflow: hidden;
 }
 .role-left,
-.role-game-center,
-.role-reveal{ min-height: 0; overflow: hidden; }
+.role-game-center{ min-height: 0; overflow: hidden; }
+.role-reveal{ min-height: 0; }
 .role-game-flow{
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 }
 .role-flow-node{
-	min-height: 30px;
-	padding: 3px 9px;
+	min-height: 26px;
+	padding: 2px 9px;
 	border: 3px solid #333;
 	border-radius: 8px;
 	background: #fff;
@@ -480,15 +485,15 @@
 .role-left{
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 8px;
 	min-width: 0;
 }
 .role-game-flow{ gap: 3px; }
 .role-knobs{
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	padding-top: 8px;
+	gap: 4px;
+	padding-top: 6px;
 	border-top: 2px dashed #d8bf92;
 }
 .role-knobs-title{
@@ -506,8 +511,8 @@
 .role-knob-top b{ color: #315f7c; }
 .role-knob input[type=range]{
 	width: 100%;
-	height: 16px;
-	margin: 1px 0 0;
+	height: 14px;
+	margin: 0;
 	accent-color: #315f7c;
 	cursor: pointer;
 }
@@ -544,22 +549,51 @@
 .role-belief-explain{ max-width: 370px; margin: 4px auto 0; text-align: center; }
 .role-belief-explain p{ margin: 0 0 4px; }
 .role-mood{ font-size: 16px; color: #315f7c; }
-.role-why{ font-size: 14px; line-height: 1.14; color: #666; }
-.role-verdict{ font-size: 15px; line-height: 1.14; color: #7a3f18; }
+.role-why{ font-size: 16px; line-height: 1.15; color: #666; }
+.role-verdict{ font-size: 16px; line-height: 1.15; color: #7a3f18; }
 
-/* keep the reveal/result panel inside the frame */
-.role-reveal{ padding: 14px 18px; overflow: hidden; }
-.role-reveal h3{ font-size: 26px; line-height: 1.0; margin-bottom: 8px; }
-.role-reveal p{ font-size: 16px; line-height: 1.13; margin: 0 0 8px; }
-.role-placeholder{ font-size: 22px; }
-.role-reveal .role-outcome-line{ font-size: 16px; line-height: 1.13; margin: 0 0 8px; }
+/* ============================================================
+   Result / reveal panel — SINGLE source of truth.
+   Flex column, top-aligned (centring tall content would clip it), with the
+   retry button pushed to the bottom. No overflow:hidden, so "try another move"
+   is never cut off. Compact-but-readable type keeps the K (oversight) reveal —
+   the tallest case — comfortably inside the panel.
+   ============================================================ */
+.role-reveal{
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	padding: 18px 20px;
+	border: 3px solid #333;
+	border-radius: 8px;
+	background: #fffdf6;
+}
+/* pre-result preview: top-aligned "what's coming" + mini checklist */
+.role-preview{ width: 100%; }
+.role-preview h3{ margin: 0 0 8px; font-size: 27px; line-height: 1.0; color: #315f7c; }
+.role-preview-body{ margin: 0 0 14px; font-size: 17px; line-height: 1.2; color: #555; }
+.role-preview-steps{ display: flex; flex-direction: column; gap: 10px; }
+.role-preview-step{ display: flex; align-items: center; gap: 11px; font-size: 17px; color: #888; }
+.role-preview-step .role-preview-tick{
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 27px; height: 27px; flex: 0 0 auto;
+	border: 2px solid currentColor; border-radius: 50%;
+	font-size: 14px; line-height: 1;
+}
+.role-preview-step.done{ color: #2f6d3a; }
+.role-preview-step.done .role-preview-tick{ background: #eef7ef; }
+.role-preview-step.current{ color: #315f7c; font-weight: bold; }
+.role-preview-step.current .role-preview-tick{ background: #eef4f8; }
+.role-reveal h3{ margin: 0 0 8px; font-size: 30px; line-height: 0.98; color: #315f7c; }
+.role-reveal p{ margin: 0 0 8px; font-size: 17px; line-height: 1.15; }
+.role-reveal .role-outcome-line{ margin: 0 0 8px; font-size: 17px; line-height: 1.15; }
+.role-placeholder{ margin: auto 0; text-align: center; font-size: 22px; line-height: 1.14; color: #777; }
 /* the "play first, name later" payoff */
-.role-policy-reveal{ margin: 0 0 8px; padding: 8px 0; border-top: 2px dashed #d8bf92; border-bottom: 2px dashed #d8bf92; }
+.role-policy-reveal{ margin: 0 0 10px; padding: 10px 0; border-top: 2px dashed #d8bf92; border-bottom: 2px dashed #d8bf92; }
 .role-policy-kicker{ display: block; font-size: 13px; color: #7a3f18; }
-.role-reveal .role-policy-reveal b{ display: block; font-size: 21px; line-height: 1; color: #315f7c; margin: 2px 0 4px; }
-.role-reveal .role-policy-reveal p{ font-size: 14px; line-height: 1.13; margin: 0; color: #444; }
-.role-reveal .role-vietnam{ font-size: 14px; line-height: 1.13; color: #7a3f18; margin: 0 0 8px; }
-.role-try-button{ font-size: 18px; padding: 7px 14px; }
+.role-reveal .role-policy-reveal b{ display: block; margin: 2px 0 5px; font-size: 24px; line-height: 1; color: #315f7c; }
+.role-reveal .role-policy-reveal p{ margin: 0; font-size: 15.5px; line-height: 1.15; color: #444; }
+.role-reveal .role-vietnam{ margin: 0 0 8px; font-size: 15.5px; line-height: 1.15; color: #7a3f18; }
 
 /* ---- Equilibrium Lab: world button, verdict, world chips, room meter ---- */
 .role-knobs-head{
@@ -587,7 +621,7 @@
 }
 .role-world-button:hover{ color: #a9572a; }
 
-.role-eq-verdict{ font-size: 14px; line-height: 1.13; margin: 0 0 7px; color: #444; }
+.role-eq-verdict{ font-size: 15px; line-height: 1.15; margin: 0 0 8px; color: #444; }
 .role-eq-verdict b{ color: #315f7c; }
 .role-eq-separating b{ color: #2f6d3a; }
 .role-eq-pooling b{ color: #7a3f18; }
@@ -595,7 +629,7 @@
 
 .role-world-chips{ display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 7px; }
 .role-chip{
-	font-size: 11px;
+	font-size: 12px;
 	line-height: 1;
 	color: #555;
 	border: 1px solid #c9b48a;
@@ -622,7 +656,9 @@
 }
 .role-room-fill{ height: 100%; background: #5d8a4c; transition: width 0.4s ease-out; }
 
-.role-try-buttons{ display: flex; gap: 8px; flex-wrap: wrap; }
+/* retry sits at the bottom of the result panel; margin-top:auto eats any spare
+   space so the panel reads top-to-bottom with the button anchored low */
+.role-try-buttons{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 8px; }
 .role-try-world{ background: #fff; }
 
 .role-game-center,
@@ -633,21 +669,31 @@
 .role-game-center{
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
-	gap: 12px;
+	justify-content: flex-start;
+	padding-top: 14px;
+	gap: 10px;
 	text-align: center;
 }
 .role-small-label{
-	margin: 0 0 8px;
-	font-size: 18px;
+	margin: 0 0 6px;
+	font-size: 17px;
 	color: #777;
 }
-.role-decision h3,
-.role-reveal h3{
+.role-decision h3{
 	margin: 0 0 14px;
 	font-size: 33px;
 	line-height: 0.98;
 	color: #315f7c;
+}
+/* China's "Adapt or wait?" prompt: concise so the buttons stay on-screen */
+.role-game-center .role-decision .role-decision-q{
+	margin: 0 0 6px;
+	font-size: 27px;
+}
+.role-game-center .role-decision .role-observed{
+	margin: 0 0 12px;
+	font-size: 17px;
+	line-height: 1.12;
 }
 .role-signal-buttons{
 	display: grid;
@@ -695,13 +741,13 @@
 .role-oversight-sequence{
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	max-width: 340px;
-	margin: 6px auto 0;
+	gap: 8px;
+	max-width: 384px;
+	margin: 8px auto 0;
 }
 .role-oversight-steps{
 	display: flex;
-	gap: 6px;
+	gap: 8px;
 	justify-content: center;
 }
 .role-oversight-step{
@@ -709,17 +755,19 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 2px;
-	padding: 5px 4px;
+	justify-content: center;
+	gap: 4px;
+	min-height: 64px;
+	padding: 8px 6px;
 	border: 2px solid #bbb;
 	border-radius: 8px;
 	background: #fff;
 	color: #777;
 	text-align: center;
 }
-/* compact the U.S. "keep enforcing" heading so the advance button stays visible */
-.role-decision-build h3{ font-size: 24px; margin: 0 0 4px; }
-.role-decision-build .role-observed{ margin: 0 0 6px; font-size: 17px; }
+/* the U.S. "keep enforcing" heading — compact but clearly the lead-in to the steps */
+.role-decision-build h3{ font-size: 28px; margin: 0 0 5px; }
+.role-decision-build .role-observed{ margin: 0 0 8px; font-size: 17px; }
 .role-oversight-step.current{
 	border-color: #315f7c;
 	color: #315f7c;
@@ -733,34 +781,32 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: 28px;
+	height: 28px;
 	border: 2px solid currentColor;
 	border-radius: 50%;
-	font-size: 15px;
+	font-size: 16px;
 	line-height: 1;
 	flex: 0 0 auto;
 }
 .role-oversight-step b{
-	font-size: 14px;
+	font-size: 15px;
 	line-height: 1;
 }
 .role-oversight-button{
 	align-self: center;
-	margin-top: 3px;
-	font-size: 22px;
-	padding: 8px 16px;
+	margin-top: 8px;
+	font-size: 23px;
+	padding: 9px 18px;
 }
 .role-oversight-copy{
-	margin: 0;
-	font-size: 16px;
-	line-height: 1.08;
+	margin: 6px 0 0;
+	font-size: 15px;
+	line-height: 1.12;
 	color: #777;
 }
 .role-try-button{
-	align-self: flex-start;
-	margin-top: 4px;
-	padding: 8px 14px;
+	padding: 8px 16px;
 	font-size: 20px;
 	background: #fff8df;
 }
@@ -808,26 +854,6 @@
 .role-belief-legend{
 	margin-top: 8px;
 	color: #666;
-}
-.role-reveal{
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: 16px 22px;
-	border: 3px solid #333;
-	border-radius: 8px;
-	background: #fffdf6;
-}
-.role-placeholder{
-	text-align: center;
-	font-size: 23px;
-	line-height: 1.12;
-	color: #777;
-}
-.role-reveal p{
-	margin: 0 0 13px;
-	font-size: 20px;
-	line-height: 1.12;
 }
 .role-vietnam-title{
 	padding-top: 10px;
@@ -955,7 +981,7 @@
 	position: absolute;
 	inset: 0;
 	z-index: 0;
-	opacity: 0.16;
+	opacity: 0.10;
 	pointer-events: none;
 }
 .vh-bg svg{ width: 100%; height: 100%; display: block; }
@@ -973,36 +999,38 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 26px;
-	margin-bottom: 8px;
+	margin-bottom: 6px;
 }
-.vh-title{ max-width: 740px; }
+.vh-title{ max-width: 760px; }
 .vh-title h2{
-	margin: 0 0 6px;
-	font-size: 36px;
+	margin: 0 0 4px;
+	font-size: 35px;
 	line-height: 0.96;
 	color: #315f7c;
 }
 .vh-sub{
-	margin: 0 0 4px;
-	font-size: 15px;
+	margin: 0 0 3px;
+	font-size: 15.5px;
 	line-height: 1.15;
 	color: #444;
 }
 .vh-tagline{
 	margin: 0;
-	font-size: 17px;
+	font-size: 16px;
 	color: #7a3f18;
 	font-style: italic;
 }
-.vh-title .role-eyebrow{ font-size: 17px; margin-bottom: 4px; }
+.vh-title .role-eyebrow{ font-size: 16px; margin-bottom: 3px; }
 
-/* ---- three-zone board: observed → pressure → response ---- */
+/* ---- three-column board: observed → pressure → response ----
+   Stable grid: content columns at 1fr / 1.15fr / 1.1fr with a narrow track
+   between each for the flow arrow, so glyphs never collide with text. */
 .vh-board{
 	display: grid;
-	grid-template-columns: 1.05fr 28px 1.25fr 28px 1.15fr;
-	align-items: stretch;
-	gap: 0;
-	margin-bottom: 8px;
+	grid-template-columns: 1fr 26px 1.15fr 26px 1.1fr;
+	align-items: start;
+	column-gap: 8px;
+	margin-bottom: 0;
 	min-height: 0;
 }
 .vh-zone{
@@ -1013,15 +1041,18 @@
 }
 .vh-zone-label{
 	margin: 0 0 8px;
-	font-size: 16px;
+	font-size: 15px;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
 	color: #7a3f18;
 }
+/* arrow sits in its own track, vertically centred against the rows of
+   cards/bars/buttons (offset past the uppercase zone heading) */
 .vh-arrow{
 	align-self: center;
-	font-size: 26px;
-	color: #7a3f18;
+	margin-top: 18px;
+	font-size: 24px;
+	color: #b08a52;
 	text-align: center;
 }
 
@@ -1029,14 +1060,14 @@
 .vh-obs-stack{
 	display: flex;
 	flex-direction: column;
-	gap: 9px;
+	gap: 7px;
 }
 .vh-obs-chip{
-	padding: 11px 13px;
+	padding: 10px 13px;
 	border: 1px solid #b9aa82;
 	border-radius: 7px;
 	background: #f5efdf;
-	font-size: 17px;
+	font-size: 16px;
 	color: #6b5d3f;
 }
 
@@ -1044,18 +1075,19 @@
 .vh-meters{
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 6px;
 }
 .vh-meter-head{
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
-	margin-bottom: 3px;
+	margin-bottom: 2px;
 }
-.vh-meter-name{ font-size: 16px; color: #444; }
-.vh-meter-tag{ font-size: 13px; color: #4d7a3f; font-style: italic; }
+.vh-meter-name{ font-size: 15px; color: #444; }
+.vh-meter-tag{ font-size: 12px; color: #4d7a3f; font-style: italic; }
+.vh-meter.raised .vh-meter-tag{ color: #b9692f; }
 .vh-meter-track{
-	height: 11px;
+	height: 10px;
 	border: 2px solid #333;
 	border-radius: 6px;
 	background: #fff;
@@ -1064,9 +1096,10 @@
 .vh-meter-fill{
 	height: 100%;
 	background: #b9692f;            /* brown = pressure */
-	transition: width 0.4s ease-out, background 0.3s ease-out;
+	transition: width 0.45s ease-out, background 0.3s ease-out;
 }
 .vh-meter.eased .vh-meter-fill{ background: #5d8a4c; }   /* green = managed */
+.vh-meter.raised .vh-meter-fill{ background: #d98a3c; } /* amber = strained up by a tradeoff */
 .vh-meter.active .vh-meter-name{ color: #315f7c; font-weight: bold; }
 .vh-meter.active .vh-meter-track{ border-color: #315f7c; }
 
@@ -1074,14 +1107,14 @@
 .vh-levers{
 	display: flex;
 	flex-direction: column;
-	gap: 7px;
+	gap: 6px;
 }
 .vh-lever{
 	font-family: 'FuturaHandwritten';
 	position: relative;
 	display: flex;
 	align-items: center;
-	padding: 9px 13px;
+	padding: 7px 13px;
 	border: 2px solid #333;
 	border-radius: 7px;
 	background: #fff;
@@ -1092,66 +1125,89 @@
 	transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
 }
 .vh-lever:hover{ transform: translateY(-1px); }
-.vh-lever b{ font-size: 20px; line-height: 1; color: #315f7c; }
-.vh-lever.opened{ border-color: #7a3f18; }
+.vh-lever b{ font-size: 19px; line-height: 1.04; color: #315f7c; }
+/* committed move: green left accent + a tick in the bottom-right corner */
+.vh-lever.opened{
+	border-color: #5d8a4c;
+	border-left-width: 6px;
+}
+.vh-lever.opened::after{
+	content: "✓";
+	position: absolute;
+	right: 9px;
+	bottom: 5px;
+	font-size: 13px;
+	line-height: 1;
+	color: #5d8a4c;
+}
 .vh-lever.selected{
 	background: #fff2c4;            /* ivory/yellow paper */
 	border-width: 3px;
 	border-color: #333;
-	padding: 10px 12px;
+	padding: 8px 12px;
+	/* reserve the top-right corner so the badge never overlaps the title */
+	padding-right: 78px;
 	box-shadow: 0 4px 0 rgba(0,0,0,0.16);
 }
+.vh-lever.opened.selected{ border-left-width: 6px; }
+/* badge tucked inside the button's top-right corner (anchored to .vh-lever) */
 .vh-lever-flag{
 	position: absolute;
-	top: -8px;
-	right: 9px;
-	padding: 0 5px;
+	top: 6px;
+	right: 8px;
+	padding: 2px 7px;
 	border: 1px solid #7a3f18;
 	border-radius: 4px;
-	background: #fff2c4;
-	font-size: 9px;
-	letter-spacing: 0.02em;
+	background: #fbe6b0;
+	font-size: 10px;
+	line-height: 1.1;
+	letter-spacing: 0.03em;
 	text-transform: uppercase;
 	color: #7a3f18;
 }
 
-/* ---- explanation panel (document-like card) ---- */
+/* ---- explanation panel (document-like card) ----
+   Sits BELOW the three columns in normal flow (never absolutely positioned).
+   Fills the remaining height and centres its content; tightened copy keeps the
+   italic footer inside the frame in every state. */
 .vh-card{
 	flex: 1 1 auto;
 	min-height: 0;
+	margin-top: 12px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	box-sizing: border-box;
 	border: 3px solid #333;
 	border-radius: 10px;
 	background: #fffdf6;
 	padding: 12px 22px;
 	box-shadow: 0 4px 0 rgba(0,0,0,0.10);
-	overflow: visible;
+	overflow: hidden;
 }
 .vh-card-head{
 	display: flex;
 	align-items: baseline;
 	gap: 12px;
-	margin-bottom: 2px;
+	margin-bottom: 1px;
 }
-.vh-card-head .role-small-label{ margin: 0; }
+.vh-card-head .role-small-label{ margin: 0; font-size: 15px; }
 .vh-formal{
 	margin: 0;
-	font-size: 17px;
+	font-size: 15px;
 	color: #7a3f18;
 	font-style: italic;
 }
 .vh-card h3{
-	margin: 0 0 5px;
+	margin: 0 0 4px;
 	font-size: 28px;
 	line-height: 0.98;
 	color: #315f7c;
 }
 .vh-ifthen{
 	margin: 0 0 6px;
-	font-size: 17px;
-	line-height: 1.15;
+	font-size: 16px;
+	line-height: 1.16;
 	color: #7a3f18;
 }
 .vh-body-copy{
@@ -1161,8 +1217,8 @@
 	color: #333;
 }
 .vh-synthesis{
-	margin: 8px 0 0;
-	padding-top: 8px;
+	margin: 7px 0 0;
+	padding-top: 7px;
 	border-top: 2px dashed #c9b48a;
 	font-size: 14px;
 	line-height: 1.18;
@@ -1170,11 +1226,42 @@
 	font-style: italic;
 }
 
+/* ---- tradeoff feedback: consequence line + chips ---- */
+.vh-consequence{
+	margin: 0 0 7px;
+	padding: 6px 10px;
+	border-left: 4px solid #b9692f;
+	background: #fbf1e2;
+	border-radius: 4px;
+	font-size: 15px;
+	line-height: 1.16;
+	color: #6b4a2a;
+}
+.vh-chips{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0 0 7px;
+}
+.vh-chip{
+	font-size: 12.5px;
+	line-height: 1;
+	padding: 4px 9px;
+	border-radius: 11px;
+	border: 1px solid #c9b48a;
+	background: #faf6ea;
+	color: #555;
+	white-space: nowrap;
+}
+.vh-chip-good{ border-color: #5d8a4c; background: #eef6e9; color: #356b2c; }
+.vh-chip-cost{ border-color: #c98a3c; background: #fbf0df; color: #97591f; }
+.vh-chip-room{ border-color: #315f7c; background: #e9f1f6; color: #245067; }
+
 /* ---- run-context line + Vietnam room-to-move (connects to the role game) ---- */
 .vh-status{
 	display: flex;
 	align-items: stretch;
-	gap: 14px;
+	gap: 12px;
 	margin: 0 0 8px;
 }
 .vh-runline{
@@ -1182,7 +1269,7 @@
 	margin: 0;
 	display: flex;
 	align-items: center;
-	padding: 6px 12px;
+	padding: 6px 13px;
 	border: 2px solid #7a3f18;
 	border-left-width: 6px;
 	border-radius: 6px;
@@ -1191,25 +1278,45 @@
 	line-height: 1.14;
 	color: #7a3f18;
 }
-.vh-room{
-	flex: 0 0 210px;
+/* room-to-move + policy-capacity readouts */
+.vh-mini{
+	flex: 0 0 176px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 }
-.vh-room-head{
+.vh-mini-head{
 	display: flex;
 	justify-content: space-between;
-	font-size: 14px;
+	gap: 8px;
+	font-size: 13.5px;
 	color: #315f7c;
 	margin-bottom: 4px;
 }
-.vh-room-head b{ color: #2f6d3a; }
-.vh-room-track{
+.vh-mini-head b{ color: #2f6d3a; }
+.vh-mini-track{
 	height: 11px;
 	border: 2px solid #333;
 	border-radius: 6px;
 	background: #fff;
 	overflow: hidden;
 }
-.vh-room-fill{ height: 100%; background: #5d8a4c; transition: width 0.45s ease-out; }
+.vh-mini-fill{ height: 100%; transition: width 0.45s ease-out; }
+.vh-room .vh-mini-fill{ background: #5d8a4c; }          /* green = room to move */
+.vh-capacity .vh-mini-head b{ color: #8a6d1f; }
+.vh-capacity .vh-mini-fill{ background: #c79a3a; }      /* gold = policy capacity */
+
+/* ---- responsive fallback ----
+   The design canvas is a fixed 960×540 stage, but if it is ever rendered into a
+   narrower container the three columns stack and the flow arrows hide, so nothing
+   overflows horizontally or collides. */
+@media (max-width: 760px){
+	.vh-board{
+		grid-template-columns: 1fr;
+		row-gap: 10px;
+	}
+	.vh-arrow{ display: none; }
+	.vh-status{ flex-direction: column; gap: 8px; }
+	.vh-mini{ flex-basis: auto; }
+	.vh-lever.selected{ padding-right: 78px; }
+}

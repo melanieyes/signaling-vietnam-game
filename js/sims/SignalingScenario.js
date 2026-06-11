@@ -1092,9 +1092,9 @@ function SignalingRoleGame(config){
       return decision;
     }
 
-    decision.appendChild(el("p", "role-small-label", "your decision"));
-    decision.appendChild(el("h3", "", signalFace(self.state.signal).abstract));
-    decision.appendChild(el("p", "role-observed", "You see the move, not the U.S. type. Adapt now, or wait?"));
+    decision.appendChild(el("p", "role-small-label", "your call as China"));
+    decision.appendChild(el("h3", "role-decision-q", "Adapt now, or wait?"));
+    decision.appendChild(el("p", "role-observed", "You see the move — " + signalFace(self.state.signal).abstract.toLowerCase() + " — not the U.S. type."));
     if(self.state.signal === "K" && self.state.oversightStep < 3){
       decision.appendChild(renderOversightSequence());
       return decision;
@@ -1163,10 +1163,51 @@ function SignalingRoleGame(config){
     return row;
   }
 
+  // Before the move resolves, the result panel shows a structured preview
+  // (what's coming + a mini checklist) instead of one lonely centred line.
+  function renderWaitingPreview(){
+    var wrap = el("div", "role-preview");
+    wrap.appendChild(el("p", "role-small-label", "up next"));
+
+    if(self.role === "US"){
+      wrap.appendChild(el("h3", "", "Waiting for China"));
+      wrap.appendChild(el("p", "role-preview-body", "China's response will appear once the U.S. move becomes observable."));
+      if(self.state.signal === "K"){
+        var labels = ["Announce policy", "Audit providers", "Enforce repeatedly"];
+        var list = el("div", "role-preview-steps");
+        for(var i = 0; i < labels.length; i++){
+          var cls = "role-preview-step";
+          if(self.state.oversightStep > i) cls += " done";
+          else if(self.state.oversightStep === i) cls += " current";
+          var step = el("div", cls);
+          step.appendChild(el("span", "role-preview-tick", self.state.oversightStep > i ? "✓" : String(i + 1)));
+          step.appendChild(el("span", "", labels[i]));
+          list.appendChild(step);
+        }
+        wrap.appendChild(list);
+      }
+      return wrap;
+    }
+
+    // China receiver: hidden type, decide to reveal
+    wrap.appendChild(el("h3", "", "Reading the signal"));
+    wrap.appendChild(el("p", "role-preview-body", "You see the move, not the U.S. type. Choose Adapt or Wait to reveal it."));
+    var steps = [["Signal observed", "done"], ["Your call: Adapt or Wait", "current"], ["U.S. type revealed", "todo"]];
+    var clist = el("div", "role-preview-steps");
+    for(var j = 0; j < steps.length; j++){
+      var cs = el("div", "role-preview-step " + steps[j][1]);
+      cs.appendChild(el("span", "role-preview-tick", steps[j][1] === "done" ? "✓" : String(j + 1)));
+      cs.appendChild(el("span", "", steps[j][0]));
+      clist.appendChild(cs);
+    }
+    wrap.appendChild(clist);
+    return wrap;
+  }
+
   function renderReveal(){
     var reveal = el("section", "role-reveal");
     if(!self.state.revealed){
-      reveal.appendChild(el("div", "role-placeholder", self.role === "US" ? "China's response appears after you pick a move." : "The U.S. type is revealed after you choose."));
+      reveal.appendChild(renderWaitingPreview());
       return reveal;
     }
 
@@ -1417,33 +1458,48 @@ function SignalingVietnamHedge(config){
   // What Vietnam observes in the U.S.–China compute game (it can't pick these).
   var observed = ["Export controls", "Threshold governance", "Provider oversight"];
 
-  // Strategic pressure on Vietnam. Each lever (below) eases one of these.
+  // Strategic pressure on Vietnam. Each lever (below) pushes these up or down.
   var pressures = [
-    { label: "Compute dependence", base: 0.82, eased: 0.46 },
-    { label: "Energy strain",      base: 0.70, eased: 0.40 },
-    { label: "Standards lock-in",  base: 0.60, eased: 0.32 },
-    { label: "Governance overload",base: 0.76, eased: 0.38 }
+    { label: "Compute dependence",  base: 0.82 },
+    { label: "Energy strain",       base: 0.70 },
+    { label: "Standards lock-in",   base: 0.60 },
+    { label: "Governance overload", base: 0.76 }
   ];
 
-  // Vietnam's flexible-commitment levers. relieves → index into `pressures`.
+  // Vietnam's flexible-commitment levers — now a playable choice with tradeoffs.
+  //   effects: pressure index -> delta (negative eases, positive strains)
+  //   consequence: one-line "what this costs you" feedback
+  //   chips: {t: label, k: good|cost} tradeoff tags shown when selected
   var levers = [
     {
       title: "Diversify compute access", formal: "Compute resilience", relieves: 0,
+      effects: { 0: -0.40, 3: +0.10 },
+      consequence: "Cuts dependence on any single chokepoint — but spreads oversight thinner.",
+      chips: [ {t:"dependency ↓", k:"good"}, {t:"governance burden ↑", k:"cost"} ],
       ifthen: "If chip and cloud access becomes conditional, Vietnam should avoid dependence on a single supplier, cloud, or geopolitical corridor.",
       body: "Vietnam should keep procurement, cloud use, and infrastructure planning portable across suppliers. One external shock should not freeze the whole AI ecosystem."
     },
     {
       title: "Build modular infrastructure", formal: "Energy-aware modular build", relieves: 1,
+      effects: { 1: -0.34, 0: -0.06 },
+      consequence: "Smaller sector clusters ease the energy load and harden resilience over time.",
+      chips: [ {t:"energy strain ↓", k:"good"}, {t:"resilience ↑", k:"good"} ],
       ifthen: "If frontier-scale compute is too costly and energy-intensive, Vietnam should build smaller, sector-specific clusters.",
       body: "Vietnam should build smaller, sector-specific clusters for manufacturing, logistics, agriculture, education, climate, and public administration instead of chasing frontier-scale compute."
     },
     {
       title: "Keep model options open", formal: "Model pluralism", relieves: 2,
+      effects: { 2: -0.32, 3: +0.08 },
+      consequence: "Staying model-agnostic avoids lock-in — at the cost of extra coordination.",
+      chips: [ {t:"lock-in ↓", k:"good"}, {t:"coordination ↑", k:"cost"} ],
       ifthen: "If global AI standards fragment, Vietnam should preserve interoperability and avoid pre-commitment.",
       body: "Vietnam should mix proprietary models, open-weight models, and domestic fine-tuning according to risk level. The goal is interoperability, not dependence on one ecosystem."
     },
     {
       title: "Regulate in stages", formal: "Institutional sequencing", relieves: 3,
+      effects: { 3: -0.40, 0: -0.05 },
+      consequence: "Sequencing rules eases governance overload; compute relief comes slower.",
+      chips: [ {t:"governance burden ↓", k:"good"}, {t:"compute relief: slow", k:"cost"} ],
       ifthen: "If governance capacity is limited, Vietnam should begin with visible and enforceable rules before expanding.",
       body: "Vietnam should begin with provider oversight, documentation, and high-risk use cases, then expand as institutional capacity improves."
     }
@@ -1454,17 +1510,13 @@ function SignalingVietnamHedge(config){
   // Faint river-delta / grid + server-node / cable motif behind the board.
   var BG_SVG =
     '<svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' +
-      '<g fill="none" stroke="#315f7c" stroke-width="1.4" opacity="0.5">' +
+      '<g fill="none" stroke="#315f7c" stroke-width="1.4" opacity="0.45">' +
         '<path d="M-20 150 C 220 120 360 230 540 220 C 720 210 860 300 1000 280"/>' +
         '<path d="M-20 150 C 200 200 320 320 470 360 C 600 396 760 430 1000 430"/>' +
         '<path d="M540 220 C 600 280 640 360 700 540"/>' +
         '<path d="M470 360 C 520 420 540 480 560 540"/>' +
       '</g>' +
-      '<g stroke="#7a3f18" stroke-width="1.2" opacity="0.4">' +
-        '<line x1="120" y1="80" x2="120" y2="470"/><line x1="360" y1="60" x2="360" y2="500"/>' +
-        '<line x1="600" y1="60" x2="600" y2="500"/><line x1="840" y1="80" x2="840" y2="470"/>' +
-      '</g>' +
-      '<g fill="#315f7c" opacity="0.5">' +
+      '<g fill="#315f7c" opacity="0.45">' +
         '<circle cx="120" cy="150" r="4"/><circle cx="360" cy="220" r="4"/>' +
         '<circle cx="540" cy="220" r="4"/><circle cx="600" cy="360" r="4"/>' +
         '<circle cx="470" cy="360" r="4"/><circle cx="840" cy="280" r="4"/>' +
@@ -1489,6 +1541,39 @@ function SignalingVietnamHedge(config){
     return el("p", "vh-zone-label", text);
   }
 
+  // ---- interactive model: cumulative tradeoffs + policy capacity ----
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+  function clickedCount(){
+    var n = 0; for(var k = 0; k < levers.length; k++){ if(self.clicked[k]) n++; } return n;
+  }
+  // a pressure's level = its base plus every committed lever's effect on it
+  function pressureLevel(pi){
+    var lvl = pressures[pi].base;
+    for(var i = 0; i < levers.length; i++){
+      if(self.clicked[i] && levers[i].effects[pi] != null) lvl += levers[i].effects[pi];
+    }
+    return clamp(lvl, 0.06, 0.98);
+  }
+  // each move spends policy capacity — you cannot do everything at once
+  function policyCapacity(){ return clamp(1 - clickedCount() * 0.22, 0.04, 1); }
+  function allOpened(){
+    for(var k = 0; k < levers.length; k++){ if(!self.clicked[k]) return false; } return true;
+  }
+  // a small labelled meter (room to move / policy capacity)
+  function miniMeter(label, value, extraClass){
+    var wrap = el("div", "vh-mini " + extraClass);
+    var head = el("div", "vh-mini-head");
+    head.appendChild(el("span", "", label));
+    head.appendChild(el("b", "", Math.round(value * 100) + "%"));
+    wrap.appendChild(head);
+    var track = el("div", "vh-mini-track");
+    var fill = el("div", "vh-mini-fill");
+    fill.style.width = Math.round(value * 100) + "%";
+    track.appendChild(fill);
+    wrap.appendChild(track);
+    return wrap;
+  }
+
   self.render = function(){
     self.dom.innerHTML = "";
     var page = el("div", "vh-page");
@@ -1502,10 +1587,10 @@ function SignalingVietnamHedge(config){
     // ---- header ----
     var header = el("header", "vh-header");
     var title = el("div", "vh-title");
-    title.appendChild(el("p", "role-eyebrow", "The downstream audience"));
+    title.appendChild(el("p", "role-eyebrow", "Play as Vietnam — the downstream audience"));
     title.appendChild(el("h2", "", "Vietnam's move: flexible commitment"));
     title.appendChild(el("p", "vh-sub", "Vietnam observes the U.S.–China compute game from the outside. It cannot choose America's signal or China's response. But it can choose how fragile or flexible its own AI ecosystem becomes."));
-    title.appendChild(el("p", "vh-tagline", "Stay credible. Keep options open."));
+    title.appendChild(el("p", "vh-tagline", "Stay credible. Keep options open. Pull a lever to make your move."));
     header.appendChild(title);
     var actions = el("div", "scenario-header-buttons");
     actions.appendChild((function(){
@@ -1516,31 +1601,21 @@ function SignalingVietnamHedge(config){
     header.appendChild(actions);
     inner.appendChild(header);
 
-    // ---- connect to the previous run + Vietnam room to move ----
+    // ---- status: what China did + room to move + policy capacity ----
+    var status = el("div", "vh-status");
     if(window.SignalingWorld){
-      var status = el("div", "vh-status");
       status.appendChild(el("p", "vh-runline", SignalingWorld.lastRunSentence()));
-
-      var meters = SignalingWorld.downstreamMeters(SignalingWorld.state.lastRun, SignalingWorld.vietnamLeverCount());
-      var roomWrap = el("div", "vh-room");
-      var roomHead = el("div", "vh-room-head");
-      roomHead.appendChild(el("span", "", "Vietnam room to move"));
-      roomHead.appendChild(el("b", "", Math.round(meters.roomToMove * 100) + "%"));
-      roomWrap.appendChild(roomHead);
-      var roomTrack = el("div", "vh-room-track");
-      var roomFill = el("div", "vh-room-fill");
-      roomFill.style.width = Math.round(meters.roomToMove * 100) + "%";
-      roomTrack.appendChild(roomFill);
-      roomWrap.appendChild(roomTrack);
-      status.appendChild(roomWrap);
-
-      inner.appendChild(status);
+      var dm = SignalingWorld.downstreamMeters(SignalingWorld.state.lastRun, SignalingWorld.vietnamLeverCount());
+      status.appendChild(miniMeter("Vietnam room to move", dm.roomToMove, "vh-room"));
     }
+    status.appendChild(miniMeter("Policy capacity left", policyCapacity(), "vh-capacity"));
+    inner.appendChild(status);
 
-    // ---- three-zone board ----
+    // ---- three-column decision board ----
     var board = el("div", "vh-board");
+    var sel = levers[self.selected];
 
-    // zone 1 — observed signal
+    // zone 1 — observed signal (Vietnam can't pick these)
     var z1 = el("div", "vh-zone vh-observed");
     z1.appendChild(zoneLabel("Observed signal"));
     var obsStack = el("div", "vh-obs-stack");
@@ -1552,20 +1627,22 @@ function SignalingVietnamHedge(config){
 
     board.appendChild(el("div", "vh-arrow", "→"));
 
-    // zone 2 — strategic pressure (meters)
+    // zone 2 — strategic pressure meters (driven by committed levers)
     var z2 = el("div", "vh-zone vh-pressure");
     z2.appendChild(zoneLabel("Strategic pressure"));
     var meters = el("div", "vh-meters");
-    var activeRelief = self.clicked[self.selected] ? levers[self.selected].relieves : -1;
     for(var p = 0; p < pressures.length; p++){
       (function(pi){
-        var pr = pressures[pi];
-        var eased = !!self.clicked[pi];           // lever index maps 1:1 to pressure index
-        var level = eased ? pr.eased : pr.base;
-        var row = el("div", "vh-meter" + (pi === activeRelief ? " active" : "") + (eased ? " eased" : ""));
+        var base = pressures[pi].base;
+        var level = pressureLevel(pi);
+        var managed = level < base - 0.02;
+        var raised = level > base + 0.02;
+        var active = sel.effects[pi] != null;     // this move touches this pressure
+        var cls = "vh-meter" + (active ? " active" : "") + (managed ? " eased" : "") + (raised ? " raised" : "");
+        var row = el("div", cls);
         var head = el("div", "vh-meter-head");
-        head.appendChild(el("span", "vh-meter-name", pr.label));
-        head.appendChild(el("span", "vh-meter-tag", eased ? "managed" : ""));
+        head.appendChild(el("span", "vh-meter-name", pressures[pi].label));
+        head.appendChild(el("span", "vh-meter-tag", managed ? "managed" : (raised ? "strained" : "")));
         row.appendChild(head);
         var track = el("div", "vh-meter-track");
         var fill = el("div", "vh-meter-fill");
@@ -1580,9 +1657,9 @@ function SignalingVietnamHedge(config){
 
     board.appendChild(el("div", "vh-arrow", "→"));
 
-    // zone 3 — Vietnam's response (levers)
+    // zone 3 — Vietnam's response levers (the playable choice)
     var z3 = el("div", "vh-zone vh-response");
-    z3.appendChild(zoneLabel("Vietnam's response"));
+    z3.appendChild(zoneLabel("Your move · pull a lever"));
     var leverList = el("div", "vh-levers");
     for(var i = 0; i < levers.length; i++){
       (function(index){
@@ -1596,7 +1673,7 @@ function SignalingVietnamHedge(config){
           self.render();
         });
         if(self.selected === index){
-          tile.appendChild(el("span", "vh-lever-flag", "selected lever"));
+          tile.appendChild(el("span", "vh-lever-flag", "selected"));
         }
         tile.appendChild(el("b", "", lv.title));
         leverList.appendChild(tile);
@@ -1607,7 +1684,7 @@ function SignalingVietnamHedge(config){
 
     inner.appendChild(board);
 
-    // ---- explanation panel (updates with selected lever) ----
+    // ---- explanation + tradeoff feedback (updates with selected lever) ----
     var cur = levers[self.selected];
     var card = el("section", "vh-card");
     var cardHead = el("div", "vh-card-head");
@@ -1616,14 +1693,24 @@ function SignalingVietnamHedge(config){
     card.appendChild(cardHead);
     card.appendChild(el("h3", "", cur.title));
     card.appendChild(el("p", "vh-ifthen", cur.ifthen));
-    card.appendChild(el("p", "vh-body-copy", cur.body));
 
-    // synthesis appears once all four levers have been opened
-    var allOpened = true;
-    for(var k = 0; k < levers.length; k++){ if(!self.clicked[k]){ allOpened = false; break; } }
-    if(allOpened){
-      var note = el("p", "vh-synthesis", SYNTHESIS);
-      card.appendChild(note);
+    // consequence line (NEW): the move's tradeoff, in one sentence
+    card.appendChild(el("p", "vh-consequence",
+      (self.clicked[self.selected] ? "" : "If chosen: ") + cur.consequence));
+
+    // feedback chips (NEW): ↓ gains, ↑ costs, + room to move
+    var chips = el("div", "vh-chips");
+    for(var c = 0; c < cur.chips.length; c++){
+      chips.appendChild(el("span", "vh-chip vh-chip-" + cur.chips[c].k, cur.chips[c].t));
+    }
+    chips.appendChild(el("span", "vh-chip vh-chip-room", "room to move +9%"));
+    card.appendChild(chips);
+
+    // body while exploring; the synthesis takes its place once all four committed
+    if(allOpened()){
+      card.appendChild(el("p", "vh-synthesis", SYNTHESIS));
+    }else{
+      card.appendChild(el("p", "vh-body-copy", cur.body));
     }
     inner.appendChild(card);
 

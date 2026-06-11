@@ -71,41 +71,67 @@ s{
 /*************************/
 /******* SOUND *******/
 /*************************/
+/* Hand-drawn parchment toggle — matches the game's buttons and stays legible
+   in both states (the old white "sound on" label was invisible on white).
+   The #sound[sound=on|off] attribute is flipped by js/lib/sound.js. */
 #sound{
 	position: absolute;
-	left:13px;
-	top:5px;
-	width: 100px;
-	height: 50px;
+	left: 14px;
+	top: 12px;
+	z-index: 1100;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 15px 6px 11px;
+	font-family: 'FuturaHandwritten';
+	font-size: 19px;
+	line-height: 1;
+	color: #2a2a2a;
+	background: #fff8df;
+	border: 3px solid #333;
+	border-radius: 999px;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.16);
 	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, background 0.15s ease-out, color 0.15s ease-out;
+}
+#sound:hover{
+	transform: translateY(-2px);
+	box-shadow: 0 6px 0 rgba(0,0,0,0.13);
+}
+#sound:active{
+	transform: translateY(1px);
+	box-shadow: 0 3px 0 rgba(0,0,0,0.16);
 }
 #sound > div{
-	position: absolute;
+	position: static;
 }
 #sound #sound_icon{
 	background: url(../assets/ui/sound.png);
 	background-size: auto 100%;
-	width: 40px;
-	height: 40px;
-	top: 5px;
-	left:2px;
+	background-position: 0 0;       /* speaker-on frame */
+	width: 24px;
+	height: 24px;
+	flex: 0 0 auto;
 }
 #sound #sound_on, #sound #sound_off{
-	left: 52px;
-    font-size: 30px;
-    line-height: 55px;
+	font-size: 19px;
+	line-height: 1;
+	color: inherit;
 }
-#sound #sound_on{
-	color:#fff;
-}
-#sound #sound_off{
-	color:#595959;
+/* muted state: dimmed parchment + the muted speaker frame */
+#sound[sound=off]{
+	background: #ece4cd;
+	color: #8a8275;
+	border-color: #6f6a5e;
 }
 #sound[sound=off] #sound_icon{
-	background-position: -40px 0;
+	background-position: -24px 0;   /* muted frame (sprite is two 100px squares) */
+	opacity: 0.85;
 }
 #sound[sound=on] #sound_on, #sound[sound=off] #sound_off{
-	display: block;
+	display: inline;
 }
 #sound[sound=off] #sound_on, #sound[sound=on] #sound_off{
 	display: none;
@@ -143,6 +169,11 @@ s{
 	position: absolute;
 	left:-480px;
 	top:-270px;
+
+	/* Scaled to fill #main by fitStage() in main.js; origin = centre so the
+	   stage stays centred as it grows/shrinks. Internal 960×540 coords unchanged. */
+	transform-origin: 50% 50%;
+	transition: transform 0.15s ease-out;
 
 }
 

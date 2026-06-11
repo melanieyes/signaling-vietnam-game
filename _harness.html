@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="css/slides.css">
+<link rel="stylesheet" type="text/css" href="css/signaling-scenarios.css">
+<style>
+  html,body{margin:0;background:#888;}
+  /* frame the exact 960x540 design canvas with a red clip boundary */
+  #frame{position:absolute;left:20px;top:20px;width:960px;height:540px;
+         outline:2px solid red;overflow:hidden;background:#fff;}
+</style>
+</head>
+<body>
+<div id="frame"></div>
+<script src="js/lib/helpers.js"></script>
+<script src="js/sims/SignalingWorld.js"></script>
+<script src="js/sims/SignalingScenario.js"></script>
+<script>
+// minimal stubs for the pub/sub the components call
+window._add = window._add || function(o){ document.getElementById('frame').appendChild(o.dom); };
+window._remove = window._remove || function(){};
+
+var params = new URLSearchParams(location.search);
+var which = params.get('which') || 'china';
+
+function mount(obj){ document.getElementById('frame').appendChild(obj.dom); }
+
+if(which === 'china'){
+  window.signalingRole = 'China';
+  window.signalingSelectedSignal = 'T';
+  var g = new SignalingRoleGame({ id:'g', x:0, y:0, width:960, height:540 });
+  mount(g);
+}
+if(which === 'us'){
+  window.signalingRole = 'US';
+  window.signalingSelectedSignal = params.get('sig') || 'E';
+  var g2 = new SignalingRoleGame({ id:'g', x:0, y:0, width:960, height:540 });
+  mount(g2);
+  // K (Provider Oversight) needs the oversight sequence advanced to reveal —
+  // click through it so we can screenshot the tallest result card.
+  if((params.get('sig') || 'E') === 'K'){
+    var maxSteps = params.get('steps') == null ? 99 : parseInt(params.get('steps'), 10);
+    var done = 0;
+    var tick = setInterval(function(){
+      var btn = document.querySelector('.role-oversight-button');
+      if(btn && done < maxSteps){ btn.click(); done++; } else { clearInterval(tick); }
+    }, 250);
+  }
+}
+if(which === 'vietnam'){
+  var v = new SignalingVietnamHedge({ id:'v', x:0, y:0, width:960, height:540 });
+  mount(v);
+  // open all four levers => worst-case height (synthesis shows)
+  setTimeout(function(){
+    v.clicked = {0:true,1:true,2:true,3:true};
+    v.selected = parseInt(params.get('sel') || '3', 10);
+    v.render();
+  }, 50);
+}
+</script>
+</body>
+</html>
