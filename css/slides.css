@@ -71,8 +71,7 @@ s{
 /*************************/
 /******* SOUND *******/
 /*************************/
-/* Hand-drawn parchment toggle — matches the game's buttons and stays legible
-   in both states (the old white "sound on" label was invisible on white).
+/* Hand-drawn parchment toggle, icon only (round button).
    The #sound[sound=on|off] attribute is flipped by js/lib/sound.js. */
 #sound{
 	position: absolute;
@@ -81,15 +80,15 @@ s{
 	z-index: 1100;
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	padding: 6px 15px 6px 11px;
+	justify-content: center;
+	gap: 0;
+	padding: 9px;
 	font-family: 'FuturaHandwritten';
-	font-size: 19px;
 	line-height: 1;
 	color: #2a2a2a;
 	background: #fff8df;
 	border: 3px solid #333;
-	border-radius: 999px;
+	border-radius: 50%;
 	box-shadow: 0 4px 0 rgba(0,0,0,0.16);
 	cursor: pointer;
 	user-select: none;
@@ -115,26 +114,18 @@ s{
 	height: 24px;
 	flex: 0 0 auto;
 }
+/* icon only: hide the text labels entirely */
 #sound #sound_on, #sound #sound_off{
-	font-size: 19px;
-	line-height: 1;
-	color: inherit;
+	display: none;
 }
 /* muted state: dimmed parchment + the muted speaker frame */
 #sound[sound=off]{
 	background: #ece4cd;
-	color: #8a8275;
 	border-color: #6f6a5e;
 }
 #sound[sound=off] #sound_icon{
 	background-position: -24px 0;   /* muted frame (sprite is two 100px squares) */
 	opacity: 0.85;
-}
-#sound[sound=on] #sound_on, #sound[sound=off] #sound_off{
-	display: inline;
-}
-#sound[sound=off] #sound_on, #sound[sound=on] #sound_off{
-	display: none;
 }
 
 .sharing{

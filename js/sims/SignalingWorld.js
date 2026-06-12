@@ -1,5 +1,5 @@
 /*
-  SignalingWorld.js — shared "Equilibrium Lab" state + helpers.
+  SignalingWorld.js: shared "Equilibrium Lab" state + helpers.
 
   The slides are independent vanilla components, so cross-round memory and the
   equilibrium / Vietnam logic live here in ONE place. Everything teaching-facing
@@ -69,9 +69,9 @@
   // ---- "Try another world" randomization ----------------------------------
   function randomize(){
     return {
-      prior: 0.30 + Math.random() * 0.40,              // 30%–70%
-      adaptationCapacity: 0.20 + Math.random() * 0.60, // 20%–80%
-      loopholes: 0.10 + Math.random() * 0.50,          // 10%–60%
+      prior: 0.30 + Math.random() * 0.40,              // 30% to 70%
+      adaptationCapacity: 0.20 + Math.random() * 0.60, // 20% to 80%
+      loopholes: 0.10 + Math.random() * 0.50,          // 10% to 60%
       costKey: COST_KEYS[Math.floor(Math.random() * COST_KEYS.length)],
       usType: Math.random() > 0.5 ? "H" : "L"
     };
@@ -116,10 +116,10 @@
     vietnamLevers: {}   // index -> true (set from the Vietnam screen)
   };
 
-  // A previewed run (live slider drag / world panel) — updates lastRun, no round bump.
+  // A previewed run (live slider drag / world panel) updates lastRun, no round bump.
   function setLastRun(run){ state.lastRun = run; }
 
-  // A committed play — bumps the round counter and appends to the log.
+  // A committed play bumps the round counter and appends to the log.
   function commitRun(run){
     state.lastRun = run;
     state.round += 1;
@@ -144,7 +144,7 @@
   // Human sentence describing the last run, for the Vietnam screen.
   function lastRunSentence(){
     var r = state.lastRun;
-    if(!r || !r.signal) return "Play a round first — then Vietnam reacts to what it saw.";
+    if(!r || !r.signal) return "Play a round first, then Vietnam reacts to what it saw.";
     var sig = r.signalReal || r.signal;
     if(r.response === "A") return "In your run, China adapted after seeing " + sig + ".";
     if(r.response === "W") return "In your run, China chose Wait after seeing " + sig + ".";

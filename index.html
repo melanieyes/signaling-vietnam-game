@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<title>Signals of Compute Power</title>
-	<meta name="description" content="An interactive signaling game of U.S.–China compute governance and Vietnam's policy path.">
+	<meta name="description" content="An interactive signaling game of U.S.-China compute governance and Vietnam's policy path.">
 
 	<link rel="icon" type="image/png" href="favicon.png">
 
@@ -48,7 +48,7 @@
 
 
 	<!-- ============================================================= -->
-	<!--  SCRIPTS — load order matters: libs -> core -> sims -> slides -> main  -->
+	<!--  SCRIPTS: load order matters: libs -> core -> sims -> slides -> main  -->
 	<!-- ============================================================= -->
 
 	<!-- Libraries -->
@@ -88,10 +88,18 @@
 	<script src="js/sims/Tournament.js"></script>
 	<script src="js/sims/SandboxUI.js"></script>
 
-	<!-- Slides (the SLIDES array is populated by these, in filename order) -->
-	<script src="js/slides/1_Slides_Signaling.js"></script>
+	<!-- Slides: one file per section (Nicky Case style), loaded in order.
+	     Each file pushes its slide(s) onto SLIDES and registers its own copy. -->
+	<script src="js/slides/0_Slides_Intro.js"></script>
+	<script src="js/slides/1_Slides_Model.js"></script>
+	<script src="js/slides/2_Slides_Typology.js"></script>
+	<script src="js/slides/3_Slides_Roles.js"></script>
+	<script src="js/slides/4_Slides_Ending.js"></script>
+	<script src="js/slides/5_Slides_Vietnam.js"></script>
+	<script src="js/slides/6_Slides_Advanced.js"></script>
+	<script src="js/slides/7_Slides_Credits.js"></script>
 
-	<!-- Bootstrap (must run last — builds the slideshow from SLIDES) -->
+	<!-- Bootstrap (must run last, builds the slideshow from SLIDES) -->
 	<script src="js/main.js"></script>
 
 </body>

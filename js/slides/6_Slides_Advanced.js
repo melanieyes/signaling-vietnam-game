@@ -1,0 +1,60 @@
+// ============ SLIDE: advanced (the math) ============
+SLIDES.push({
+  id: "signaling_advanced",
+  onstart: function(self){
+    self.add({
+      id:"title",
+      type:"TextBox",
+      x:80,
+      y:24,
+      width:800,
+      align:"center",
+      size:31,
+      color:"#315f7c",
+      text_id:"signaling_advanced_title"
+    });
+    self.add({
+      id:"left",
+      type:"TextBox",
+      x:130,
+      y:118,
+      width:700,
+      align:"center",
+      size:26,
+      text_id:"signaling_advanced_left"
+    });
+    self.add({
+      id:"right",
+      type:"TextBox",
+      x:160,
+      y:252,
+      width:640,
+      align:"center",
+      size:24,
+      color:"#7a3f18",
+      text_id:"signaling_advanced_right"
+    });
+    self.add({
+      id:"bottom",
+      type:"TextBox",
+      x:160,
+      y:350,
+      width:708,
+      align:"center",
+      size:21,
+      text_id:"signaling_advanced_bottom"
+    });
+    self.add({
+      id:"button",
+      type:"Button",
+      x:306,
+      y:466,
+      size:"long",
+      text_id:"signaling_advanced_button",
+      message:"slideshow/scratch"
+    });
+  },
+  onend: function(self){
+    self.clear();
+  }
+});

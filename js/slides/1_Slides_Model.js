@@ -1,0 +1,60 @@
+// ============ SLIDE: the model ============
+SLIDES.push({
+  id: "signaling_game",
+  onstart: function(self){
+    self.add({
+      id:"title",
+      type:"TextBox",
+      x:90,
+      y:24,
+      width:780,
+      align:"center",
+      size:31,
+      color:"#315f7c",
+      text_id:"signaling_game_title"
+    });
+    self.add({
+      id:"left",
+      type:"TextBox",
+      x:70,
+      y:90,
+      width:385,
+      size:18,
+      text_id:"signaling_game_left"
+    });
+    self.add({
+      id:"right",
+      type:"TextBox",
+      x:520,
+      y:90,
+      width:370,
+      size:18,
+      text_id:"signaling_game_right"
+    });
+    self.add({
+      id:"flow",
+      type:"TextBox",
+      x:130,
+      y:330,
+      width:700,
+      align:"center",
+      size:20,
+      color:"#7a3f18",
+      text_id:"signaling_game_flow"
+    });
+    self.add({
+      id:"note",
+      type:"TextBox",
+      x:120,
+      y:410,
+      width:720,
+      align:"center",
+      size:18,
+      text_id:"signaling_game_note"
+    });
+    _signalingAddNext(self, 306, 466, "signaling_game_button");
+  },
+  onend: function(self){
+    self.clear();
+  }
+});

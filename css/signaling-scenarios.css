@@ -530,8 +530,8 @@
 	background: #fff;
 	color: #315f7c;
 	font-size: 22px;
-	min-height: 92px;
-	padding: 12px 8px;
+	min-height: 82px;
+	padding: 10px 8px;
 	cursor: pointer;
 	box-shadow: 0 4px 0 rgba(0,0,0,0.14);
 	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
@@ -670,8 +670,8 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	padding-top: 14px;
-	gap: 10px;
+	padding-top: 6px;
+	gap: 8px;
 	text-align: center;
 }
 .role-small-label{
@@ -757,8 +757,8 @@
 	align-items: center;
 	justify-content: center;
 	gap: 4px;
-	min-height: 64px;
-	padding: 8px 6px;
+	min-height: 58px;
+	padding: 7px 6px;
 	border: 2px solid #bbb;
 	border-radius: 8px;
 	background: #fff;
@@ -960,13 +960,15 @@
    ivory backgrounds, dark outline borders, muted blue titles,
    brown labels & arrows.
    ============================================================ */
-.signaling_vietnam_hedge{
+.signaling_vietnam_hedge,
+.signaling_vietnam{
 	font-family: 'FuturaHandwritten';
 	color: #333;
 	background: #fff;
 	overflow: hidden;
 }
-.signaling_vietnam_hedge *{ box-sizing: border-box; }
+.signaling_vietnam_hedge *,
+.signaling_vietnam *{ box-sizing: border-box; }
 
 .vh-page{
 	position: relative;
@@ -1320,3 +1322,121 @@
 	.vh-mini{ flex-basis: auto; }
 	.vh-lever.selected{ padding-right: 78px; }
 }
+
+/* ============================================================
+   Vietnam — 3-scene interactive flow
+   (1 observe · 2 build · 3 consequence)
+   Reuses the parchment vh-* identity: page/bg/header/meters/chips/mini.
+   ============================================================ */
+
+/* primary call-to-action (hand-drawn parchment button) */
+.vh-cta-row{ display: flex; justify-content: center; margin-top: 16px; }
+.vh-cta{
+	font-family: 'FuturaHandwritten';
+	border: 3px solid #333;
+	border-radius: 10px;
+	background: #fff8df;
+	color: #222;
+	font-size: 24px;
+	padding: 11px 28px;
+	cursor: pointer;
+	box-shadow: 0 5px 0 rgba(0,0,0,0.16);
+	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+.vh-cta:hover{ transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,0.13); }
+.vh-cta.disabled{ opacity: 0.5; box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+
+/* ---- scene 1: observe ---- */
+.vo-observed{ display: flex; align-items: stretch; gap: 14px; margin: 2px 0 10px; }
+.vo-ob{
+	flex: 1 1 0;
+	display: flex; flex-direction: column; gap: 5px;
+	padding: 11px 16px;
+	border: 2px solid #333; border-radius: 8px; background: #fffdf6;
+}
+.vo-ob-label{ font-size: 14px; color: #7a3f18; text-transform: uppercase; letter-spacing: 0.03em; }
+.vo-ob b{ font-size: 24px; line-height: 1; color: #315f7c; }
+.vo-arrow{ align-self: center; font-size: 28px; color: #b08a52; flex: 0 0 auto; }
+.vo-runline{
+	margin: 0 0 12px;
+	padding: 8px 14px;
+	border: 2px solid #7a3f18; border-left-width: 6px; border-radius: 6px;
+	background: #fff8df;
+	font-size: 16px; line-height: 1.15; color: #7a3f18;
+}
+.vo-meters{ display: grid; grid-template-columns: 1fr 1fr; gap: 11px 28px; margin-top: 8px; }
+
+/* ---- scene 2: build ---- */
+.vb-grid{
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 272px;
+	gap: 16px;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.vb-cards{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	align-content: start;
+}
+.vb-card{
+	font-family: 'FuturaHandwritten';
+	position: relative;
+	display: flex; flex-direction: column; gap: 7px;
+	padding: 13px 15px;
+	border: 2px solid #333; border-radius: 9px;
+	background: #fff; color: #222; text-align: left; cursor: pointer;
+	box-shadow: 0 3px 0 rgba(0,0,0,0.12);
+	transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+}
+.vb-card:hover{ transform: translateY(-1px); }
+.vb-card.selected{
+	background: #fff2c4;
+	border-width: 3px;
+	padding: 12px 14px;
+	padding-right: 34px;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.16);
+}
+.vb-card.selected::after{
+	content: "✓";
+	position: absolute; top: 8px; right: 11px;
+	font-size: 17px; line-height: 1; color: #5d8a4c;
+}
+.vb-card-title{ font-size: 20px; line-height: 1.04; color: #315f7c; }
+.vb-card-desc{ margin: 0; font-size: 14px; line-height: 1.18; color: #555; }
+.vb-card-foot{ display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 2px; }
+.vb-card-chips{ display: flex; flex-wrap: wrap; gap: 6px; }
+.vb-card-cost{ font-size: 13px; color: #8a6d1f; margin-left: auto; }
+
+.vb-rail{ display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.vb-tray{
+	display: flex; flex-wrap: wrap; align-content: flex-start; gap: 7px;
+	min-height: 46px;
+	padding: 9px;
+	border: 2px dashed #c9b48a; border-radius: 8px; background: #fffdf6;
+}
+.vb-tray-empty{ margin: 0; font-size: 14px; color: #999; font-style: italic; }
+.vb-tray-chip{
+	font-size: 14px; padding: 6px 11px; border-radius: 12px;
+	border: 1px solid #315f7c; background: #e9f1f6; color: #245067;
+}
+.vb-warn{ margin: 0; font-size: 13px; color: #a3531f; }
+.vb-rail .vh-cta{ margin-top: auto; font-size: 21px; padding: 10px 18px; }
+
+/* ---- scene 3: consequence ---- */
+.vc-stats{ display: flex; gap: 16px; margin: 2px 0 12px; }
+.vc-stats .vh-mini{ flex: 1 1 0; }
+.vc-bars{ display: flex; flex-direction: column; gap: 10px; }
+.vc-bar-label{ display: flex; justify-content: space-between; gap: 12px; font-size: 15px; color: #444; margin-bottom: 4px; }
+.vc-bar-label b{ color: #315f7c; }
+.vc-track{
+	position: relative; height: 14px;
+	border: 2px solid #333; border-radius: 6px; background: #fff; overflow: hidden;
+}
+.vc-ghost{ position: absolute; top: 0; left: 0; height: 100%; background: #e6d9bf; }
+.vc-fill{ position: absolute; top: 0; left: 0; height: 100%; background: #5d8a4c; transition: width 0.5s ease-out; }
+.vc-fill.up{ background: #d98a3c; }
+.vc-summary-chips{ display: flex; flex-wrap: wrap; gap: 9px; margin: 13px 0 9px; }
+.vc-summary-chips .vh-chip{ font-size: 14px; padding: 5px 11px; }
+.vc-narrative{ margin: 0; font-size: 16px; line-height: 1.24; color: #444; }
