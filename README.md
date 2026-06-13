@@ -2,6 +2,8 @@
 
 An interactive explorable explanation about how compute policy works as a costly signal between great powers, and what that means for a middle power like Vietnam.
 
+![Playing as China the receiver: reading the U.S. signal, watching the belief cross the adapt line, and choosing to adapt or wait.](assets/cover.png)
+
 You play through a U.S. to China to Vietnam signaling model: the U.S. sends a costly compute signal, China reads it and updates its beliefs, then adapts or waits, and Vietnam inherits the downstream pressure while trying to keep room to move.
 
 Built in the spirit of Nicky Case's ["The Evolution of Trust"](https://ncase.me/trust/): hand drawn, playful, and meant to be poked at rather than read like a paper.
