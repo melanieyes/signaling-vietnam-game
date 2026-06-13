@@ -1528,23 +1528,119 @@
    so the capacity bar stays near the selected chips and no gap opens up */
 .vb-rail{ align-self: start; }
 
-/* ---- scene 3: consequence ---- */
+/* ---- scene 3: consequence / strategy debrief ---- */
 .vc-stats{ display: flex; gap: 16px; margin: 2px 0 12px; }
 .vc-stats .vh-mini{ flex: 1 1 0; }
-.vc-bars{ display: flex; flex-direction: column; gap: 10px; }
-.vc-bar-label{ display: flex; justify-content: space-between; gap: 12px; font-size: 15px; color: #444; margin-bottom: 4px; }
-.vc-bar-label b{ color: #315f7c; }
+
+/* A. selected-strategy chips under the title */
+.vc-strategy{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; }
+.vc-strategy-label{ font-size: 15px; color: #7a3f18; }
+.vc-strategy-chip{
+	font-size: 14px; padding: 5px 12px; border-radius: 12px;
+	border: 2px solid #315f7c; background: #e9f1f6; color: #245067;
+}
+.vc-strategy-none{ border-style: dashed; border-color: #c9b48a; background: #fffdf6; color: #999; font-style: italic; }
+
+/* B. headline score cards */
+.vc-scorecards{ display: flex; gap: 14px; margin: 0 0 12px; }
+.vc-score{
+	flex: 1 1 0; display: flex; flex-direction: column;
+	padding: 9px 14px; border: 2px solid #333; border-radius: 10px;
+	background: #fffdf6; box-shadow: 0 3px 0 rgba(0,0,0,0.12);
+}
+.vc-score-label{ font-size: 14px; color: #315f7c; }
+.vc-score-val{ font-size: 30px; line-height: 1.0; color: #2f6d3a; }
+.vc-score-cap .vc-score-val{ color: #8a6d1f; }
+.vc-score-note{ margin-top: 2px; font-size: 12.5px; line-height: 1.12; color: #777; font-style: italic; }
+
+/* C + D: two-column debrief grid */
+.vc-debrief{ display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; }
+
+/* D. before -> after rows: numbers + delta lead, thin bar underneath */
+.vc-changes{ display: flex; flex-direction: column; gap: 7px; }
+.vc-row-head{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 3px; }
+.vc-row-name{ font-size: 14.5px; color: #444; }
+.vc-row-nums{ display: flex; align-items: baseline; gap: 8px; }
+.vc-row-nums b{ font-size: 14.5px; color: #315f7c; }
+.vc-delta{ font-size: 13px; font-weight: bold; }
+.vc-delta.down{ color: #2f6d3a; }
+.vc-delta.up{ color: #c0622a; }
+.vc-delta.flat{ color: #999; }
 .vc-track{
-	position: relative; height: 14px;
+	position: relative; height: 11px;
 	border: 2px solid #333; border-radius: 6px; background: #fff; overflow: hidden;
 }
 /* before = faint ghost, after = solid bar on top (clear contrast) */
 .vc-ghost{ position: absolute; top: 0; left: 0; height: 100%; background: #f1ebdb; }
 .vc-fill{ position: absolute; top: 0; left: 0; height: 100%; background: #4f8a3d; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.10); transition: width 0.5s ease-out; }
 .vc-fill.up{ background: #d98a3c; }
-.vc-summary-chips{ display: flex; flex-wrap: wrap; gap: 9px; margin: 13px 0 9px; }
-.vc-summary-chips .vh-chip{ font-size: 14px; padding: 5px 11px; }
-.vc-narrative{ margin: 0; font-size: 16px; line-height: 1.24; color: #444; }
+
+/* C. result summary: colour-accented debrief lines */
+.vc-result{ display: flex; flex-direction: column; gap: 8px; }
+.vc-res{
+	display: flex; flex-direction: column;
+	padding: 7px 11px; border-radius: 8px; border-left: 4px solid #999; background: #fffdf6;
+}
+.vc-res-kicker{ font-size: 11.5px; letter-spacing: 0.03em; text-transform: uppercase; color: #888; }
+.vc-res-text{ font-size: 15.5px; line-height: 1.12; color: #333; }
+.vc-res-good{ border-left-color: #4f8a3d; }
+.vc-res-cost{ border-left-color: #d98a3c; }
+.vc-res-risk{ border-left-color: #a23b2c; }
+
+/* E. thesis takeaway */
+.vc-thesis{
+	margin: 12px 0 0; padding: 10px 0 0;
+	border-top: 2px dashed #d8bf92;
+	font-size: 16px; line-height: 1.26; color: #3a3a3a;
+}
+.vc-thesis b{ color: #315f7c; }
+
+/* ---- stacked fraction (the math slide) ---- */
+.frac{
+	display: inline-flex; flex-direction: column; align-items: center;
+	vertical-align: middle; margin: 0 4px; text-align: center;
+}
+.frac > .num{ padding: 0 10px 3px; border-bottom: 2px solid currentColor; }
+.frac > .den{ padding: 3px 10px 0; }
+.formula-note{ margin-top: 8px; font-size: 16px; color: #666; }
+
+/* ---- closing-note slide: "When compute policy becomes the signal" ---- */
+.synth-page{
+	width: 100%; height: 470px; box-sizing: border-box;
+	display: flex; flex-direction: column; justify-content: center; align-items: center;
+	gap: 6px; padding: 8px 64px;
+	font-family: 'FuturaHandwritten'; color: #333; text-align: center;
+}
+.synth-eyebrow{
+	margin: 0; font-size: 14px; letter-spacing: 0.08em; text-transform: lowercase;
+	font-style: italic; color: #a98a52;
+}
+.synth-title{ margin: 0 0 6px; font-size: 31px; line-height: 1.0; color: #315f7c; }
+/* author's note: a centered block, but paragraphs read left-to-right (not a poem).
+   ~640px keeps lines in the comfortable 65-85 character range. */
+.synth-note{ max-width: 640px; text-align: left; }
+.synth-note p{ margin: 0 0 13px; font-size: 16px; line-height: 1.46; color: #3f3f3f; }
+.synth-note p:last-child{ margin-bottom: 0; }
+.synth-note b{ font-weight: bold; color: #315f7c; }
+.synth-final{ max-width: 640px; margin: 4px 0 0; text-align: center; font-size: 16px; line-height: 1.42; color: #5a5a5a; font-style: italic; }
+.synth-final b{ font-weight: bold; font-style: normal; color: #315f7c; }
+
+/* ---- end-credit / author note (final slide) ---- */
+.cred-page{
+	width: 100%; height: 510px; box-sizing: border-box;
+	display: flex; flex-direction: column; justify-content: center; align-items: center;
+	gap: 18px; padding: 16px 64px;
+	font-family: 'FuturaHandwritten'; text-align: center; color: #666;
+}
+.cred-page p{ margin: 0; }
+.cred-block{ display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cred-kicker{ font-size: 15px; font-style: italic; color: #a98a52; }
+.cred-name{ font-size: 38px; line-height: 1.0; letter-spacing: 0.03em; color: #315f7c; }
+.cred-label{ max-width: 720px; font-size: 15.5px; line-height: 1.2; color: #8a8a8a; }
+.cred-line{ max-width: 740px; font-size: 16.5px; line-height: 1.3; color: #555; }
+.cred-ps{ max-width: 680px; font-size: 15px; line-height: 1.38; color: #888; }
+.cred-page a{ color: #dd4040; text-decoration: underline; text-underline-offset: 2px; }
+.cred-page a:hover{ color: #ee5151; }
 
 /* ============================================================
    Typology scene - "Why some signals are harder to fake"

@@ -1996,15 +1996,21 @@ function SignalingVietnam(config){
     inner.appendChild(grid);
   }
 
-  // ---- scene 3: consequence / flexible commitment ----
-  function narrative(gainIdx){
-    var idx = selIndices();
-    if(idx.length === 0) return "No move was chosen, so Vietnam stays maximally exposed. " + SYNTHESIS;
-    var parts = [];
-    for(var i = 0; i < idx.length; i++){ parts.push(levers[idx[i]].title.toLowerCase()); }
-    var gain = gainIdx >= 0 ? pressures[gainIdx].label.toLowerCase() : "its biggest pressure";
-    return "By choosing " + parts.join(" + ") + ", Vietnam eases " + gain +
-      " without locking itself into one supplier, one standard, or one model ecosystem. " + SYNTHESIS;
+  // ---- scene 3: consequence / strategy debrief ----
+  // a compact score tile (big % + a one-line interpretation)
+  function scoreCard(label, value, extraClass, note){
+    var c = el("div", "vc-score " + extraClass);
+    c.appendChild(el("span", "vc-score-label", label));
+    c.appendChild(el("b", "vc-score-val", pct(value)));
+    c.appendChild(el("span", "vc-score-note", note));
+    return c;
+  }
+  // a labelled debrief line (kicker over a value), colour-coded by its accent class
+  function resultLine(cls, kicker, text){
+    var d = el("div", "vc-res " + cls);
+    d.appendChild(el("span", "vc-res-kicker", kicker));
+    d.appendChild(el("span", "vc-res-text", text));
+    return d;
   }
   function renderConsequence(){
     var inner = shell("Play as Vietnam · scene 3 of 3", "Flexible commitment is not neutrality", null,
@@ -2013,46 +2019,81 @@ function SignalingVietnam(config){
         nextLabel: "next", next: function(){ publish("slideshow/next"); }
       }));
 
-    var stats = el("div", "vc-stats");
-    stats.appendChild(miniMeter("Vietnam room to move", roomToMove(), "vh-room"));
-    stats.appendChild(miniMeter("Policy capacity left", capacityLeft(), "vh-capacity"));
-    inner.appendChild(stats);
+    // A. the strategy they chose, shown as chips right under the title
+    var strat = el("div", "vc-strategy");
+    strat.appendChild(el("span", "vc-strategy-label", "Your strategy:"));
+    var sidx = selIndices();
+    if(sidx.length === 0){
+      strat.appendChild(el("span", "vc-strategy-chip vc-strategy-none", "no moves chosen"));
+    }else{
+      for(var s = 0; s < sidx.length; s++){
+        strat.appendChild(el("span", "vc-strategy-chip", levers[sidx[s]].title));
+      }
+    }
+    inner.appendChild(strat);
 
-    inner.appendChild(el("p", "vh-zone-label", "Strategic pressure · before → after"));
-    var bars = el("div", "vc-bars");
+    // B. two headline score cards
+    var cap = capacityLeft();
+    var cards = el("div", "vc-scorecards");
+    cards.appendChild(scoreCard("Vietnam room to move", roomToMove(), "vc-score-room", "preserved, but still constrained"));
+    cards.appendChild(scoreCard("Policy capacity left", cap, "vc-score-cap", "enough to continue, not enough for everything"));
+    inner.appendChild(cards);
+
+    // strongest gain / biggest cost across the four pressures
     var gainIdx = -1, gainAmt = 0, costIdx = -1, costAmt = 0;
     for(var p = 0; p < pressures.length; p++){
-      var base = pressures[p].base, after = pressureAfter(p), d = base - after;
+      var d = pressures[p].base - pressureAfter(p);
       if(d > gainAmt){ gainAmt = d; gainIdx = p; }
       if(-d > costAmt){ costAmt = -d; costIdx = p; }
-      (function(pi, b, a){
-        var row = el("div", "vc-bar");
-        var lab = el("div", "vc-bar-label");
-        lab.appendChild(el("span", "", pressures[pi].label));
-        lab.appendChild(el("b", "", Math.round(b * 100) + "% → " + Math.round(a * 100) + "%"));
-        row.appendChild(lab);
+    }
+
+    // C + D: two-column debrief — before/after changes | result summary
+    var grid = el("div", "vc-debrief");
+
+    var changes = el("div", "vc-changes");
+    changes.appendChild(el("p", "vh-zone-label", "What changed · before → after"));
+    for(var q = 0; q < pressures.length; q++){
+      (function(pi){
+        var b = pressures[pi].base, a = pressureAfter(pi), delta = Math.round((a - b) * 100);
+        var row = el("div", "vc-row");
+        var head = el("div", "vc-row-head");
+        head.appendChild(el("span", "vc-row-name", pressures[pi].label));
+        var nums = el("span", "vc-row-nums");
+        nums.appendChild(el("b", "", Math.round(b * 100) + "% → " + Math.round(a * 100) + "%"));
+        var dcls = delta < 0 ? "down" : (delta > 0 ? "up" : "flat");
+        nums.appendChild(el("span", "vc-delta " + dcls, delta < 0 ? "↓" + Math.abs(delta) : (delta > 0 ? "↑" + delta : "0")));
+        head.appendChild(nums);
+        row.appendChild(head);
         var track = el("div", "vc-track");
         var ghost = el("div", "vc-ghost"); ghost.style.width = pct(b);
         var fill = el("div", "vc-fill" + (a > b + 0.02 ? " up" : "")); fill.style.width = pct(a);
         track.appendChild(ghost); track.appendChild(fill);
         row.appendChild(track);
-        bars.appendChild(row);
-      })(p, base, after);
+        changes.appendChild(row);
+      })(q);
     }
-    inner.appendChild(bars);
+    grid.appendChild(changes);
 
-    var sum = el("div", "vc-summary-chips");
+    var result = el("div", "vc-result");
+    result.appendChild(el("p", "vh-zone-label", "Debrief"));
     if(gainIdx >= 0 && gainAmt > 0.01){
-      sum.appendChild(el("span", "vh-chip vh-chip-good", "strongest gain: " + pressures[gainIdx].label + " ↓" + Math.round(gainAmt * 100) + "%"));
+      result.appendChild(resultLine("vc-res-good", "strongest gain", pressures[gainIdx].label + " −" + Math.round(gainAmt * 100)));
     }
     if(costIdx >= 0 && costAmt > 0.02){
-      sum.appendChild(el("span", "vh-chip vh-chip-cost", "key tradeoff: " + pressures[costIdx].label + " ↑" + Math.round(costAmt * 100) + "%"));
+      result.appendChild(resultLine("vc-res-cost", "key tradeoff", pressures[costIdx].label + " +" + Math.round(costAmt * 100)));
     }else{
-      sum.appendChild(el("span", "vh-chip vh-chip-cost", "key tradeoff: policy capacity spent " + Math.round((1 - capacityLeft()) * 100) + "%"));
+      result.appendChild(resultLine("vc-res-cost", "key tradeoff", "policy capacity spent " + Math.round((1 - cap) * 100) + "%"));
     }
-    inner.appendChild(sum);
+    result.appendChild(resultLine("vc-res-risk", "unresolved risk", "Compute dependence remains high."));
+    grid.appendChild(result);
 
-    inner.appendChild(el("p", "vc-narrative", narrative(gainIdx)));
+    inner.appendChild(grid);
+
+    // E. the thesis, lead sentence emphasised so it reads as the ending line
+    var thesis = el("p", "vc-thesis");
+    thesis.appendChild(el("b", "", "Flexible commitment is not neutrality. "));
+    thesis.appendChild(document.createTextNode("Vietnam stays credible by building capacity, not by locking into one supplier, one standard, or one model."));
+    inner.appendChild(thesis);
   }
 
   self.render = function(){

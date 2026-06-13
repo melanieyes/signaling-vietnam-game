@@ -39,7 +39,7 @@
   }
 
   function start(){
-    fetch("words.html")
+    fetch("words.html?v=4")
       .then(function(r){ if(!r.ok) throw new Error("words.html " + r.status); return r.text(); })
       .then(function(html){ Words.load(html); boot(); })
       .catch(function(err){
