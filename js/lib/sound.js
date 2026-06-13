@@ -1,5 +1,5 @@
 /*
-  sound.js — tiny self-contained audio layer for the explorable.
+  sound.js - tiny self-contained audio layer for the explorable.
 
   Wires the existing Nicky-Case sound pack in assets/sounds/ to the game's
   interactions, with a DIFFERENT sound for each kind of action so the piece
@@ -16,9 +16,9 @@
         3. button presses         → a delegated click map, varied by control
 
   Public API:
-    Sound.play(name, {volume, rate})   — fire a one-shot effect
-    Sound.setEnabled(bool)             — mute / unmute + music
-    Sound.init()                       — boot (called from main.js)
+    Sound.play(name, {volume, rate})   - fire a one-shot effect
+    Sound.setEnabled(bool)             - mute / unmute + music
+    Sound.init()                       - boot (called from main.js)
 */
 
 window.Sound = (function(){
@@ -164,7 +164,7 @@ window.Sound = (function(){
     }
     if(!node || node === document) return;
 
-    // Button.js hand-drawn buttons (.button) advance slides — let the
+    // Button.js hand-drawn buttons (.button) advance slides - let the
     // transition whoosh handle them so we don't stack two sounds.
     if(node.classList && node.classList.contains("button")) return;
     if(matches(node, ".scenario-next")) return;

@@ -1,5 +1,5 @@
 /*
-  TextBox.js — a positioned block of copy.
+  TextBox.js - a positioned block of copy.
   config: { x, y, width, align, size, color, text | text_id }
 
   Note: it uses the ".object" class (absolute positioning) but intentionally

@@ -1,14 +1,14 @@
 /*
-  helpers.js — core plumbing for the explorable.
+  helpers.js - core plumbing for the explorable.
   Self-contained pub/sub messaging + stage add/remove + the global SLIDES array.
   (Does not depend on the other lib/* placeholders.)
 
   Public API used across the project:
-    SLIDES                         — array the slide files push() into
-    listen(self, channel, fn)      — subscribe; tracked on `self` for unlisten()
-    unlisten(self)                 — drop every subscription owned by `self`
-    publish(channel, argsArray)    — fn.apply(ctx, argsArray) for each subscriber
-    _add(self) / _remove(self)     — append/remove self.dom to the #slideshow stage
+    SLIDES                         - array the slide files push() into
+    listen(self, channel, fn)      - subscribe; tracked on `self` for unlisten()
+    unlisten(self)                 - drop every subscription owned by `self`
+    publish(channel, argsArray)    - fn.apply(ctx, argsArray) for each subscriber
+    _add(self) / _remove(self)     - append/remove self.dom to the #slideshow stage
 */
 
 window.SLIDES = window.SLIDES || [];

@@ -1,5 +1,5 @@
 /*
-  SlideSelect.js — the row of navigation dots in #select (footer).
+  SlideSelect.js - the row of navigation dots in #select (footer).
   main.js calls SlideSelect.init(totalSlides) after Slideshow.init().
 */
 

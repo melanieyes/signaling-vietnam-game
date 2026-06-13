@@ -1,5 +1,5 @@
 /*
-  Words.js — tiny copy store (Evolution of Trust convention).
+  Words.js - tiny copy store (Evolution of Trust convention).
   main.js fetches words.html and calls Words.load(html).
   Words.get("some_id") returns the innerHTML of <div id="some_id"> from that file.
 */

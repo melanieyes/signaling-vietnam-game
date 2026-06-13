@@ -1,5 +1,5 @@
 /*
-  Background.js — drifting-triangle particle field (the explorabl.es / Nicky Case look).
+  Background.js - drifting-triangle particle field (the explorabl.es / Nicky Case look).
   Not 3D: a 2D <canvas> of floating, slowly-rotating triangles with faint
   "constellation" lines between nearby ones. Parallax-ish drift reads as depth.
 

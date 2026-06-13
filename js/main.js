@@ -1,5 +1,5 @@
 /*
-  main.js — bootstrap.
+  main.js - bootstrap.
   Loads words.html into Words, then starts the slideshow + nav dots.
   Slide layout lives in the per-section js/slides/*_Slides_*.js files (Nicky Case style).
 */
@@ -24,7 +24,7 @@
   }
 
   // Scale the fixed 960×540 stage up/down to fill #main while preserving 16:9.
-  // The internal coordinate system is untouched — we only CSS-transform the
+  // The internal coordinate system is untouched - we only CSS-transform the
   // stage, so every slide benefits and click/hit areas scale with it. #main is
   // already height:calc(100% - 60px), so the footer space is reserved for us.
   var MAX_STAGE_SCALE = 1.12;   // never magnify past this on large screens

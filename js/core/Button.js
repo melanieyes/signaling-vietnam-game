@@ -1,5 +1,5 @@
 /*
-  Button.js — a hand-drawn Nicky Case-style button.
+  Button.js - a hand-drawn Nicky Case-style button.
   config: { x, y, size ("short"|"long"), text | text_id, message, data }
   On click it publishes `message` with `data` (default []).
   DOM structure (#background / #text / #hitbox) matches the .button rules in slides.css.

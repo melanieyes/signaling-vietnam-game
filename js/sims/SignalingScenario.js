@@ -371,7 +371,7 @@ function SignalingRoleChoice(config){
     choices.appendChild(us);
     choices.appendChild(china);
     page.appendChild(choices);
-    page.appendChild(el("p", "role-note", "Vietnam watches downstream. It is not a playable role."));
+    page.appendChild(el("p", "role-note", "First play the U.S.-China signal game. Vietnam responds downstream later."));
     self.dom.appendChild(page);
   };
 
@@ -397,24 +397,24 @@ function SignalingSignalSelection(config){
   var signals = [
     {
       id: "E",
-      title: "A big upfront sacrifice",
+      title: "Costly move",
       copy: "Pay a large, visible cost right now.",
-      jump: "Costly &amp; hard to fake.",
-      cost: "Cost type: sunk + tied-hands."
+      jump: "Hard to fake.",
+      reveal: "real policy: ???"
     },
     {
       id: "T",
-      title: "A cheap public promise",
+      title: "Cheap promise",
       copy: "Announce a rule. Easy to say, easy to walk back.",
-      jump: "Cheap &amp; easy to copy.",
-      cost: "Cost type: weak tied-hands."
+      jump: "Easy to copy.",
+      reveal: "real policy: ???"
     },
     {
       id: "K",
-      title: "Repeated enforcement",
+      title: "Slow burn",
       copy: "Start small, then keep enforcing over time.",
-      jump: "Slow-burn credibility.",
-      cost: "Cost type: installment + reducible."
+      jump: "Credibility builds through repetition.",
+      reveal: "real policy: ???"
     }
   ];
 
@@ -437,7 +437,20 @@ function SignalingSignalSelection(config){
     var page = el("div", "signal-choice-page");
     page.appendChild(el("p", "role-eyebrow", window.signalingRole === "China" ? "Play as China Receiver" : "Play as the U.S. Sender"));
     page.appendChild(el("h2", "", "Pick your move"));
-    page.appendChild(el("p", "signal-choice-note", "Three kinds of costly signal. Play first, you'll discover which real compute policy each one actually is once the result is in."));
+    page.appendChild(el("p", "signal-choice-note", "Pick the kind of signal you want to send. The real compute policy is revealed after China responds."));
+
+    // tiny first-run guide: where the player is in the wider game
+    var guideSteps = ["choose signal", "China updates", "policy reveal", "Vietnam responds"];
+    var strip = el("div", "play-steps");
+    for(var g=0; g<guideSteps.length; g++){
+      var st = el("div", "play-step" + (g === 0 ? " current" : ""));
+      st.appendChild(el("span", "play-step-num", String(g+1)));
+      st.appendChild(el("span", "play-step-label", guideSteps[g]));
+      strip.appendChild(st);
+      if(g < guideSteps.length - 1) strip.appendChild(el("span", "play-step-arrow", "→"));
+    }
+    page.appendChild(strip);
+    page.appendChild(el("p", "signal-choice-hint", "Click one card to send this signal."));
 
     var grid = el("div", "signal-choice-grid");
     for(var i=0; i<signals.length; i++){
@@ -447,7 +460,7 @@ function SignalingSignalSelection(config){
         card.appendChild(el("b", "", signal.title));
         card.appendChild(el("span", "", signal.copy));
         card.appendChild(el("small", "", signal.jump));
-        card.appendChild(el("small", "", signal.cost));
+        card.appendChild(el("small", "signal-choice-reveal", signal.reveal));
         card.addEventListener("click", function(){ choose(signal.id); });
         grid.appendChild(card);
       })(signals[i]);
@@ -719,7 +732,9 @@ function SignalingRoleGame(config){
     self.state.usType = Math.random() > 0.5 ? "H" : "L";
     self.state.signal = selected;
     self.state.oversightStep = 0;
-    self.state.chinaBelief = self.state.signal === "K" ? self.state.priorHighResolve : computeBelief(self.state.signal);
+    // U.S.+K starts at the prior and builds via the oversight steps; China (and
+    // every other signal) reads the signal's full belief straight away.
+    self.state.chinaBelief = (self.role === "US" && self.state.signal === "K") ? self.state.priorHighResolve : computeBelief(self.state.signal);
     self.state.adaptationThreshold = computeThreshold();
     self.state.chinaResponse = null;
     self.state.outcomeType = null;
@@ -792,7 +807,7 @@ function SignalingRoleGame(config){
   function liveUpdate(){
     self.state.adaptationThreshold = computeThreshold();
     if(self.state.signal){
-      self.state.chinaBelief = self.state.signal === "K"
+      self.state.chinaBelief = (self.role === "US" && self.state.signal === "K")
         ? computeOversightBelief(self.state.oversightStep)
         : computeBelief(self.state.signal);
     }else{
@@ -825,13 +840,13 @@ function SignalingRoleGame(config){
     return ({
       E: { short: "Costly move", abstract: "A big upfront sacrifice", tag: "costly, hard to fake",
            real: "Export Controls",
-           realBlurb: "banning advanced AI chips, the Oct 2022 BIS rules and NVIDIA's H20 write-down." },
+           realBlurb: "an advanced-chip ban like the Oct 2022 BIS rules." },
       T: { short: "Cheap promise", abstract: "A cheap public promise", tag: "cheap, easy to copy",
            real: "Training-Compute Thresholds",
-           realBlurb: "a FLOP line like EO 14110's 10^26, which the next administration simply revoked." },
+           realBlurb: "a 10^26 FLOP line that was easy to revise." },
       K: { short: "Slow burn", abstract: "Repeated enforcement", tag: "builds over time",
            real: "Provider Oversight",
-           realBlurb: "KYC on cloud providers, audits, and enforcement that has to keep repeating." }
+           realBlurb: "cloud KYC and audits that must keep repeating." }
     })[id] || { short: id, abstract: id, tag: "", real: id, realBlurb: "" };
   }
 
@@ -883,8 +898,8 @@ function SignalingRoleGame(config){
     }
     self.state.adaptationThreshold = computeThreshold();
 
-    if(self.state.signal === "K"){
-      // restart the slow-burn sequence in the new world
+    if(self.role === "US" && self.state.signal === "K"){
+      // restart the slow-burn sequence in the new world (U.S. sender only)
       self.state.oversightStep = 0;
       self.state.chinaBelief = self.state.priorHighResolve;
       self.state.revealed = false;
@@ -917,11 +932,13 @@ function SignalingRoleGame(config){
     for(var i = 0; i < ids.length; i++){
       (function(id){
         var face = signalFace(id);
-        var b = el("button", "role-switch-btn" + (self.state.signal === id ? " active" : ""));
+        var active = self.state.signal === id;
+        var b = el("button", "role-switch-btn" + (active ? " active" : ""));
         b.type = "button";
         b.title = face.tag;
         b.appendChild(el("b", "", face.short));
         b.appendChild(el("small", "", face.tag));
+        if(active) b.appendChild(el("span", "role-switch-badge", "chosen ✓"));
         b.addEventListener("click", function(){ switchSignal(id); });
         wrap.appendChild(b);
       })(ids[i]);
@@ -994,26 +1011,35 @@ function SignalingRoleGame(config){
 
   function verdictLine(){
     var b = self.state.chinaBelief, thr = self.state.adaptationThreshold;
-    if(b >= thr){
-      return "Belief " + pct(b) + " is past the adapt line " + pct(thr) + " → China ADAPTS: it races to build its own substitutes.";
+    if(self.role === "China"){
+      if(b >= thr) return "Belief " + pct(b) + " crossed the adapt line " + pct(thr) + " → adaptation looks safer.";
+      return "Belief " + pct(b) + " stayed below the adapt line " + pct(thr) + " → waiting looks safer.";
     }
-    return "Belief " + pct(b) + " is below the adapt line " + pct(thr) + " → China WAITS to see if you follow through.";
+    if(b >= thr){
+      return "Belief " + pct(b) + " crossed the adapt line " + pct(thr) + " → China adapts.";
+    }
+    return "Belief " + pct(b) + " stayed below the adapt line " + pct(thr) + " → China waits.";
   }
 
   function chinaVerdict(){
     var high = self.state.usType === "H";
     var adapted = self.state.chinaResponse === "A";
-    if(high && adapted)   return "You read it right, the U.S. really was High Resolve. Adapting was the smart call.";
-    if(high && !adapted)  return "Risky: the U.S. really was High Resolve. Waiting can leave you exposed.";
-    if(!high && !adapted) return "Nice read, it was a Low-Resolve bluff. Waiting saved you the cost of adapting.";
-    return "It was only a Low-Resolve bluff, you adapted to a feint and paid costs you didn't need to.";
+    if(high && adapted)   return "Good read. The U.S. really was High Resolve.";
+    if(high && !adapted)  return "Risky. The U.S. really was High Resolve, waiting leaves you exposed.";
+    if(!high && !adapted) return "Good read. It was a Low-Resolve bluff, waiting saved you the cost.";
+    return "It was a Low-Resolve bluff. You adapted to a feint.";
   }
 
   function renderBeliefExplainer(){
     var box = el("div", "role-belief-explain");
     box.appendChild(el("p", "role-mood", "China looks " + chinaMood()));
-    box.appendChild(el("p", "role-why", beliefWhy()));
-    if(self.state.signal) box.appendChild(el("p", "role-verdict", verdictLine()));
+    // China mode keeps the center sparse: mood + one threshold sentence only.
+    // The "why this signal moves belief" paragraph stays in US sender mode.
+    if(self.role !== "China") box.appendChild(el("p", "role-why", beliefWhy()));
+    if(self.state.signal){
+      var crossed = self.state.chinaBelief >= self.state.adaptationThreshold;
+      box.appendChild(el("p", "role-verdict" + (crossed ? " crossed" : " below"), verdictLine()));
+    }
     return box;
   }
 
@@ -1060,6 +1086,13 @@ function SignalingRoleGame(config){
     track.appendChild(marker);
     wrap.appendChild(track);
 
+    // labeled threshold tick so the "adapt line" is self-explanatory
+    var tickRow = el("div", "role-adaptline");
+    var tag = el("span", "role-adaptline-tag", "▲ adapt line " + pct(self.state.adaptationThreshold));
+    tag.style.left = pct(self.state.adaptationThreshold);
+    tickRow.appendChild(tag);
+    wrap.appendChild(tickRow);
+
     var legend = el("div", "role-belief-legend");
     legend.appendChild(el("span", "", "← China waits"));
     legend.appendChild(el("span", "", "adapts →"));
@@ -1076,12 +1109,10 @@ function SignalingRoleGame(config){
     var building = self.role === "US" && self.state.signal === "K" && !self.state.revealed;
     var decision = el("section", "role-decision" + (building ? " role-decision-build" : ""));
     if(self.role === "US"){
-      decision.appendChild(el("p", "role-small-label", "your decision"));
-      decision.appendChild(el("h3", "", building ? "Keep enforcing" : "Move sent"));
-      decision.appendChild(el("p", "role-observed", signalFace(self.state.signal).abstract));
-      if(building){
-        decision.appendChild(renderOversightSequence());
-      }
+      // US reaches the decision block only mid oversight sequence (signal K, not
+      // yet revealed). No big heading here: the oversight strip carries its own
+      // one-line instruction, keeping the advance button safely on screen.
+      decision.appendChild(renderOversightSequence());
       return decision;
     }
 
@@ -1094,11 +1125,6 @@ function SignalingRoleGame(config){
 
     decision.appendChild(el("p", "role-small-label", "your call as China"));
     decision.appendChild(el("h3", "role-decision-q", "Adapt now, or wait?"));
-    decision.appendChild(el("p", "role-observed", "You see the move, " + signalFace(self.state.signal).abstract.toLowerCase() + ", not the U.S. type."));
-    if(self.state.signal === "K" && self.state.oversightStep < 3){
-      decision.appendChild(renderOversightSequence());
-      return decision;
-    }
     var responses = el("div", "role-response-buttons");
     responses.appendChild(button("role-main-button", "Adapt", function(){ chooseResponse("A"); }));
     responses.appendChild(button("role-main-button", "Wait", function(){ chooseResponse("W"); }));
@@ -1109,6 +1135,9 @@ function SignalingRoleGame(config){
   function renderOversightSequence(){
     var steps = oversightSteps();
     var wrap = el("div", "role-oversight-sequence");
+    if(self.state.oversightStep < 3){
+      wrap.appendChild(el("p", "role-hint role-oversight-hint", "Keep enforcing: complete all 3 steps to make slow burn credible."));
+    }
     var row = el("div", "role-oversight-steps");
     for(var i=0; i<steps.length; i++){
       var stepClass = "role-oversight-step";
@@ -1123,8 +1152,9 @@ function SignalingRoleGame(config){
 
     if(self.state.oversightStep < 3){
       var nextStep = steps[self.state.oversightStep];
+      // the advance button is the action; the belief bar rises live as you click
+      // through, so the per-step caption is dropped to keep the button on screen.
       wrap.appendChild(button("role-main-button role-oversight-button", nextStep.label, advanceOversight));
-      wrap.appendChild(el("p", "role-oversight-copy", nextStep.copy));
     }
 
     return wrap;
@@ -1140,6 +1170,14 @@ function SignalingRoleGame(config){
       row.appendChild(el("span", "role-chip", "signal " + SignalingWorld.credibility(self.state.chinaBelief)));
     }
     return row;
+  }
+
+  function roomWhy(){
+    return {
+      E: "Room to move fell because export controls tightened compute access.",
+      T: "Room to move held because a cheap promise barely changed access.",
+      K: "Room to move narrowed slowly as oversight kept tightening."
+    }[self.state.signal] || "Room to move reflects how much the signal squeezed Vietnam's access.";
   }
 
   function renderRoomMeter(room){
@@ -1243,6 +1281,7 @@ function SignalingRoleGame(config){
       reveal.appendChild(renderWorldChips());
       var meters = SignalingWorld.downstreamMeters(buildRun(), SignalingWorld.vietnamLeverCount());
       reveal.appendChild(renderRoomMeter(meters.roomToMove));
+      reveal.appendChild(el("p", "role-room-why", roomWhy()));
     }else{
       reveal.appendChild(el("p", "role-vietnam", "Vietnam: " + vietnamLine()));
     }
@@ -1279,8 +1318,15 @@ function SignalingRoleGame(config){
     grid.appendChild(left);
 
     var center = el("div", "role-game-center");
-    if(self.role === "US") center.appendChild(renderSignalSwitch());
-    var building = (self.state.signal === "K" && !self.state.revealed); // oversight mini-game in progress
+    var building = (self.role === "US" && self.state.signal === "K" && !self.state.revealed); // oversight mini-game (U.S. sender only)
+    if(self.role === "US"){
+      // the "China updates instantly" hint is wrong during the slow-burn build,
+      // where credibility accrues step by step, so hide it then to save space too.
+      if(!building) center.appendChild(el("p", "role-hint", "Click a signal. China updates instantly."));
+      center.appendChild(renderSignalSwitch());
+    }
+    // China's instruction lives in the decision block ("Adapt now, or wait?")
+    // and the right-side "Reading the signal" checklist, so no top hint here.
     if(self.state.signal){
       center.appendChild(renderBeliefBar());
       if(!building) center.appendChild(renderBeliefExplainer());
@@ -1340,24 +1386,24 @@ function SignalingGovernanceEnding(config){
 
   var takeaways = [
     {
-      title: "More than technical rules",
-      symbol: "1",
-      copy: "Compute governance also communicates resolve, risk, and commitment."
+      title: "More than technical rules", symbol: "1",
+      inRun: "Your compute policy did more than set a rule. It told China how serious the U.S. was.",
+      why: "Compute governance also communicates resolve, risk, and commitment, not only technical limits."
     },
     {
-      title: "Policies are signals",
-      symbol: "2",
-      copy: "Export controls, thresholds, and provider oversight change what others believe."
+      title: "Policies are signals", symbol: "2",
+      inRun: "China read your move as information about U.S. resolve, then updated its belief.",
+      why: "Export controls, thresholds, and provider oversight change what others believe, not just what they can do."
     },
     {
-      title: "Credibility can bite back",
-      symbol: "3",
-      copy: "If China believes the signal is durable, waiting can look dangerous, so adaptation speeds up."
+      title: "Credibility can bite back", symbol: "3",
+      inRun: "China interpreted the signal as durable enough that waiting became risky.",
+      why: "A credible policy can accelerate substitution rather than deter it."
     },
     {
-      title: "Vietnam keeps room to move",
-      symbol: "4",
-      copy: "Flexible commitment means diversified compute access, interoperable standards, and sequenced governance capacity."
+      title: "Vietnam keeps room to move", symbol: "4",
+      inRun: "Vietnam could not choose the U.S. signal or China's response. It inherited the shock, then looked for room to maneuver.",
+      why: "Flexible commitment is not neutrality. It means staying credible while avoiding lock-in to one supplier, one standard, or one model ecosystem."
     }
   ];
 
@@ -1385,47 +1431,74 @@ function SignalingGovernanceEnding(config){
   }
 
   function responseName(response){
-    return response === "A" ? "adapt" : (response === "W" ? "wait" : "respond");
+    return response === "A" ? "adapted" : (response === "W" ? "waited" : "responded");
+  }
+
+  // one-line summary of the player's previous run, for the debrief strip
+  function runSummary(){
+    var last = window.signalingLastState;
+    if(last && last.signal){
+      return "In your run: China " + responseName(last.chinaResponse) + " after " + signalName(last.signal) + ".";
+    }
+    return "Play a round first, then this debrief reads through your own outcome.";
   }
 
   self.render = function(){
     self.dom.innerHTML = "";
-    var last = window.signalingLastState || {};
+    var t = takeaways[self.selected];
     var page = el("div", "ending-page");
 
+    // ---- top: eyebrow, title, debrief subtitle, run-summary strip ----
     var header = el("header", "ending-header");
-    var title = el("div");
+    var title = el("div", "ending-title");
     title.appendChild(el("p", "role-eyebrow", "What this means for compute governance today"));
     title.appendChild(el("h2", "", "Signals shape the game"));
-    title.appendChild(el("p", "", last.signal ? "You just saw " + signalName(last.signal) + " make China " + responseName(last.chinaResponse) + "." : "Play a role, then come back to read the lesson through that outcome."));
+    title.appendChild(el("p", "ending-sub", "The round is over. Read each lesson through what just happened in your game."));
     header.appendChild(title);
-    var actions = el("div", "scenario-header-buttons");
-    actions.appendChild(button("scenario-reset", "roles", function(){ publish("slideshow/goto", ["signaling_role_choice"]); }));
-    actions.appendChild(button("scenario-next", "next", function(){ publish("slideshow/next"); }));
+    var actions = el("div", "ending-actions");
+    actions.appendChild(button("ending-back", "roles", function(){ publish("slideshow/goto", ["signaling_role_choice"]); }));
+    actions.appendChild(button("ending-next", "next →", function(){ publish("slideshow/next"); }));
     header.appendChild(actions);
     page.appendChild(header);
 
+    page.appendChild(el("p", "ending-run", runSummary()));
+
+    // ---- body: lesson tabs (left) + explanation panel (right) ----
     var body = el("div", "ending-body");
-    var tiles = el("div", "ending-tiles");
+
+    var tabs = el("div", "ending-tabs");
     for(var i=0; i<takeaways.length; i++){
       (function(index){
         var item = takeaways[index];
-        var tile = button("ending-tile" + (self.selected === index ? " selected" : ""), "", function(){
+        var tab = button("ending-tab" + (self.selected === index ? " selected" : ""), "", function(){
           self.selected = index;
           self.render();
         });
-        tile.appendChild(el("span", "", item.symbol));
-        tile.appendChild(el("b", "", item.title));
-        tiles.appendChild(tile);
+        tab.appendChild(el("span", "ending-tab-num", item.symbol));
+        var tx = el("div", "ending-tab-text");
+        tx.appendChild(el("b", "", item.title));
+        tab.appendChild(tx);
+        if(self.selected === index) tab.appendChild(el("span", "ending-tab-flag", "selected lesson"));
+        tabs.appendChild(tab);
       })(i);
     }
-    body.appendChild(tiles);
+    body.appendChild(tabs);
 
-    var card = el("section", "ending-card");
-    card.appendChild(el("p", "role-small-label", "takeaway"));
-    card.appendChild(el("h3", "", takeaways[self.selected].title));
-    card.appendChild(el("p", "", takeaways[self.selected].copy));
-    body.appendChild(card);
+    var panel = el("section", "ending-panel");
+    panel.appendChild(el("p", "role-small-label", "takeaway"));
+    panel.appendChild(el("h3", "", t.title));
+
+    var s1 = el("div", "ending-section");
+    s1.appendChild(el("p", "ending-section-label", "In this run"));
+    s1.appendChild(el("p", "ending-section-text", t.inRun));
+    panel.appendChild(s1);
+
+    var s2 = el("div", "ending-section");
+    s2.appendChild(el("p", "ending-section-label", "Why it matters"));
+    s2.appendChild(el("p", "ending-section-text", t.why));
+    panel.appendChild(s2);
+
+    body.appendChild(panel);
     page.appendChild(body);
 
     self.dom.appendChild(page);
@@ -1438,6 +1511,197 @@ function SignalingGovernanceEnding(config){
 }
 
 window.SignalingGovernanceEnding = SignalingGovernanceEnding;
+
+/*
+  SignalingTypology - the cost taxonomy as a game-explanation scene.
+  Same 2x2 theory (Quek), but as hand-drawn cards plus a "how your next moves
+  map" chip strip that primes the upcoming "Pick your move" choice.
+*/
+function SignalingTypology(config){
+
+  var self = this;
+  self.id = config.id || "signaling_typology";
+
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_typology";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = (config.width || 960) + "px";
+  self.dom.style.height = (config.height || 540) + "px";
+
+  var COLS = ["Non-contingent cost", "Contingent cost"];
+  var ROWS = ["Ex ante", "Ex post"];
+  // order: ex ante / non-contingent, ex ante / contingent, ex post / non-contingent, ex post / contingent
+  var cards = [
+    { title: "Sunk costs",        desc: "Paid upfront and not recovered, whatever the receiver does." },
+    { title: "Reducible costs",   desc: "Paid upfront, but partly offset if the sender follows through." },
+    { title: "Installment costs", desc: "Future costs paid over time, whatever the receiver does." },
+    { title: "Tied-hands costs",  desc: "Future costs paid only if the sender backs down." }
+  ];
+  // how the next slide's three moves map onto these cost types
+  var mappings = [
+    { move: "Big upfront sacrifice", tags: ["sunk", "tied-hands"] },
+    { move: "Cheap public promise",  tags: ["weak tied-hands"] },
+    { move: "Repeated enforcement",  tags: ["installment", "reducible"] }
+  ];
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+  function button(className, text, onClick){
+    var node = el("button", className, text);
+    node.type = "button";
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function card(i){
+    var c = el("div", "ty-card");
+    c.appendChild(el("b", "ty-card-title", cards[i].title));
+    c.appendChild(el("p", "ty-card-desc", cards[i].desc));
+    return c;
+  }
+
+  function chip(m){
+    var c = el("div", "ty-chip");
+    c.appendChild(el("span", "ty-chip-move", m.move));
+    c.appendChild(el("span", "ty-chip-arrow", "→"));
+    var tags = el("span", "ty-chip-tags");
+    for(var i = 0; i < m.tags.length; i++){
+      tags.appendChild(el("span", "ty-tag", m.tags[i]));
+    }
+    c.appendChild(tags);
+    return c;
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+    var page = el("div", "ty-page");
+
+    var head = el("div", "ty-head");
+    head.appendChild(el("h2", "ty-title", "Why some signals are harder to fake"));
+    head.appendChild(el("p", "ty-sub", "China cannot see resolve directly. It sees what the U.S. is willing to pay."));
+    page.appendChild(head);
+
+    var matrix = el("div", "ty-matrix");
+    matrix.appendChild(el("div", "ty-corner", "cost timing"));
+    matrix.appendChild(el("div", "ty-colhead", COLS[0]));
+    matrix.appendChild(el("div", "ty-colhead", COLS[1]));
+    matrix.appendChild(el("div", "ty-rowhead", ROWS[0]));
+    matrix.appendChild(card(0));
+    matrix.appendChild(card(1));
+    matrix.appendChild(el("div", "ty-rowhead", ROWS[1]));
+    matrix.appendChild(card(2));
+    matrix.appendChild(card(3));
+    page.appendChild(matrix);
+
+    var map = el("div", "ty-map");
+    map.appendChild(el("p", "ty-map-label", "how your next moves map"));
+    var chips = el("div", "ty-chips");
+    for(var i = 0; i < mappings.length; i++){ chips.appendChild(chip(mappings[i])); }
+    map.appendChild(chips);
+    page.appendChild(map);
+
+    var cta = el("div", "ty-cta-row");
+    cta.appendChild(button("ty-cta", "play it out →", function(){ publish("slideshow/next"); }));
+    page.appendChild(cta);
+
+    self.dom.appendChild(page);
+  };
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){ _remove(self); };
+
+  self.render();
+}
+
+window.SignalingTypology = SignalingTypology;
+
+/*
+  SignalingActors - orientation scene introducing the three players as cards,
+  with a flow strip and the "credibility != control" twist. Replaces the old
+  paragraph-heavy model slide.
+*/
+function SignalingActors(config){
+
+  var self = this;
+  self.id = config.id || "signaling_game";
+
+  self.dom = document.createElement("div");
+  self.dom.className = "object signaling_actors";
+  self.dom.style.left = (config.x || 0) + "px";
+  self.dom.style.top = (config.y || 0) + "px";
+  self.dom.style.width = (config.width || 960) + "px";
+  self.dom.style.height = (config.height || 540) + "px";
+
+  var actors = [
+    { name: "U.S.",    role: "The sender",             copy: "Knows its resolve, chooses a visible compute signal, and bears the cost of sending it." },
+    { name: "China",   role: "The receiver",           copy: "Cannot observe U.S. resolve directly. It reads the signal, updates μ(H|s), then adapts or waits." },
+    { name: "Vietnam", role: "The downstream audience", copy: "Does not choose the U.S. signal or China's response. It inherits the shock and looks for room to maneuver." }
+  ];
+  var flow = ["U.S. sends signal", "China updates", "Vietnam keeps room to move"];
+
+  function el(tag, className, text){
+    var node = document.createElement(tag);
+    if(className) node.className = className;
+    if(text !== undefined) node.textContent = text;
+    return node;
+  }
+  function button(className, text, onClick){
+    var node = el("button", className, text);
+    node.type = "button";
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  self.render = function(){
+    self.dom.innerHTML = "";
+    var page = el("div", "ac-page");
+
+    var head = el("div", "ac-head");
+    head.appendChild(el("h2", "ac-title", "Three actors, one compute game"));
+    head.appendChild(el("p", "ac-sub", "Compute controls target China, but their effects travel through chips, cloud access, and standards."));
+    page.appendChild(head);
+
+    var cards = el("div", "ac-cards");
+    for(var i = 0; i < actors.length; i++){
+      var c = el("div", "ac-card");
+      c.appendChild(el("p", "ac-card-name", actors[i].name));
+      c.appendChild(el("p", "ac-card-role", actors[i].role));
+      c.appendChild(el("p", "ac-card-copy", actors[i].copy));
+      cards.appendChild(c);
+    }
+    page.appendChild(cards);
+
+    var flowRow = el("div", "ac-flow");
+    for(var f = 0; f < flow.length; f++){
+      flowRow.appendChild(el("span", "ac-flow-node", flow[f]));
+      if(f < flow.length - 1) flowRow.appendChild(el("span", "ac-flow-arrow", "→"));
+    }
+    page.appendChild(flowRow);
+
+    var twist = el("div", "ac-twist");
+    twist.appendChild(el("p", "ac-twist-main", "The twist: credibility ≠ control."));
+    twist.appendChild(el("p", "ac-twist-sub", "A signal can be credible to China while narrowing Vietnam's options."));
+    page.appendChild(twist);
+
+    var cta = el("div", "ac-cta-row");
+    cta.appendChild(button("ac-cta", "next →", function(){ publish("slideshow/next"); }));
+    page.appendChild(cta);
+
+    self.dom.appendChild(page);
+  };
+
+  self.add = function(){ _add(self); };
+  self.remove = function(){ _remove(self); };
+
+  self.render();
+}
+
+window.SignalingActors = SignalingActors;
 
 function SignalingVietnam(config){
 
@@ -1634,9 +1898,18 @@ function SignalingVietnam(config){
     d.appendChild(el("b", "", val));
     return d;
   }
+  // highlighted event line: ties the run above to the spillover below
+  function runEventLine(run){
+    if(!run || !run.signalReal) return "Play a U.S.-China round first, then Vietnam inherits the spillover here.";
+    var sig = run.signalReal;
+    if(run.response === "A") return "In your run: " + sig + " made China adapt. Vietnam now faces the spillover.";
+    if(run.response === "W") return "In your run: " + sig + " left China waiting. Vietnam still inherits the pressure.";
+    return "In your run: " + sig + " went out. Vietnam now faces the spillover.";
+  }
+
   function renderObserve(){
-    var inner = shell("Play as Vietnam · scene 1 of 3", "Vietnam watches from downstream",
-      "Vietnam can't choose America's signal or China's response, only how it reacts to the shock downstream.", null);
+    var inner = shell("Play as Vietnam · scene 1 of 3", "Vietnam inherits the shock",
+      "A middle power cannot choose the great-power signal. It can choose how much room to preserve.", null);
 
     var run = window.SignalingWorld && SignalingWorld.state.lastRun;
     var strip = el("div", "vo-observed");
@@ -1645,13 +1918,22 @@ function SignalingVietnam(config){
     strip.appendChild(obItem("China's response", run ? (run.response === "A" ? "Adapts" : (run.response === "W" ? "Waits" : "not yet")) : "not yet"));
     inner.appendChild(strip);
 
-    if(window.SignalingWorld) inner.appendChild(el("p", "vo-runline", SignalingWorld.lastRunSentence()));
+    inner.appendChild(el("p", "vo-runline vo-event", runEventLine(run)));
 
-    inner.appendChild(el("p", "vh-zone-label", "Strategic pressure on Vietnam"));
+    // spillover cue: the pressure bars below are downstream consequences of the run
+    var spill = el("div", "vo-spillover");
+    spill.appendChild(el("span", "vo-spillover-line"));
+    spill.appendChild(el("span", "vo-spillover-tag", "↓ spillover"));
+    spill.appendChild(el("span", "vo-spillover-line"));
+    inner.appendChild(spill);
+
+    inner.appendChild(el("p", "vh-zone-label", "What changed for Vietnam?"));
     inner.appendChild(buildMeters(false));
 
+    inner.appendChild(el("p", "vo-bridge", "Vietnam's move is not to control the signal.\nIt is to preserve room to move."));
+
     var row = el("div", "vh-cta-row");
-    row.appendChild(ctaButton("What can Vietnam do?  →", function(){ publish("slideshow/next"); }));
+    row.appendChild(ctaButton("Build Vietnam's strategy  →", function(){ publish("slideshow/next"); }));
     inner.appendChild(row);
   }
 
@@ -1660,6 +1942,8 @@ function SignalingVietnam(config){
     var inner = shell("Play as Vietnam · scene 2 of 3", "Build Vietnam's AI strategy",
       "Pick up to 2 moves. Each eases some pressures, strains others, and spends policy capacity.",
       navButtons({ backLabel: "back", back: function(){ publish("slideshow/previous"); } }));
+
+    inner.appendChild(el("p", "vh-hint", "Click a card to add it to your strategy, then simulate."));
 
     var grid = el("div", "vb-grid");
     var cards = el("div", "vb-cards");
@@ -1698,8 +1982,9 @@ function SignalingVietnam(config){
       }
     }
     rail.appendChild(tray);
-    if(self.warn) rail.appendChild(el("p", "vb-warn", "Pick at most 2, deselect one to swap."));
+    if(self.warn) rail.appendChild(el("p", "vb-warn", "Pick another card, or click a selected move to swap."));
     rail.appendChild(miniMeter("Policy capacity left", capacityLeft(), "vh-capacity"));
+    if(selCount() > 0) rail.appendChild(el("p", "vb-feedback", "Capacity dropped because each move spends policy resources."));
     var sim = ctaButton("Simulate strategy  →", function(){
       if(selCount() > 0){ publish("slideshow/next"); }
       else { self.warn = true; self.render(); }

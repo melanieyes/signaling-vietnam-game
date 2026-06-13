@@ -1,5 +1,5 @@
 /*
-  Slideshow.js — runs the SLIDES array.
+  Slideshow.js - runs the SLIDES array.
 
   Each SLIDES entry: { id, onstart(ctrl), onend(ctrl) }.
   The controller passed to onstart/onend exposes:

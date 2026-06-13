@@ -347,18 +347,18 @@
 .signal-choice-page{
 	width: 100%;
 	height: 100%;
-	padding: 54px 64px;
+	padding: 38px 64px;
 	background: #fff;
 	text-align: center;
 }
 .signal-choice-page h2{
-	margin: 0 0 10px;
+	margin: 0 0 8px;
 	font-size: 46px;
 	line-height: 0.95;
 	color: #315f7c;
 }
 .signal-choice-note{
-	margin: 0 auto 34px;
+	margin: 0 auto 16px;
 	max-width: 690px;
 	font-size: 22px;
 	line-height: 1.12;
@@ -370,7 +370,7 @@
 }
 .signal-choice-card{
 	font-family: 'FuturaHandwritten';
-	min-height: 235px;
+	min-height: 210px;
 	padding: 22px 18px;
 	border: 3px solid #333;
 	border-radius: 8px;
@@ -379,11 +379,16 @@
 	cursor: pointer;
 	text-align: left;
 	box-shadow: 0 6px 0 rgba(0,0,0,0.16);
-	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+	transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background 0.12s ease-out;
 }
 .signal-choice-card:hover{
-	transform: translateY(-2px);
-	box-shadow: 0 8px 0 rgba(0,0,0,0.12);
+	transform: translateY(-4px) rotate(-0.3deg);
+	box-shadow: 0 9px 0 rgba(0,0,0,0.14);
+	background: #fff4c7;
+}
+.signal-choice-card:active{
+	transform: translateY(-1px) rotate(-0.2deg);
+	box-shadow: 0 4px 0 rgba(0,0,0,0.16);
 }
 .signal-choice-card b,
 .signal-choice-card span,
@@ -407,12 +412,21 @@
 	line-height: 1.08;
 	color: #555;
 }
+.signal-choice-card .signal-choice-reveal{
+	margin-top: 14px;
+	padding-top: 10px;
+	border-top: 1px dashed #cbb98a;
+	font-size: 16px;
+	font-style: italic;
+	letter-spacing: 0.04em;
+	color: #9a8a63;
+}
 .role-game-page{
 	width: 100%;
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	padding: 16px 18px 14px;
+	padding: 16px 18px 20px;   /* extra bottom = safe space below the result card */
 	background: #fff;
 }
 .role-game-header{
@@ -530,8 +544,8 @@
 	background: #fff;
 	color: #315f7c;
 	font-size: 22px;
-	min-height: 82px;
-	padding: 10px 8px;
+	min-height: 76px;
+	padding: 9px 8px;
 	cursor: pointer;
 	box-shadow: 0 4px 0 rgba(0,0,0,0.14);
 	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
@@ -553,17 +567,17 @@
 .role-verdict{ font-size: 16px; line-height: 1.15; color: #7a3f18; }
 
 /* ============================================================
-   Result / reveal panel — SINGLE source of truth.
+   Result / reveal panel - SINGLE source of truth.
    Flex column, top-aligned (centring tall content would clip it), with the
    retry button pushed to the bottom. No overflow:hidden, so "try another move"
-   is never cut off. Compact-but-readable type keeps the K (oversight) reveal —
-   the tallest case — comfortably inside the panel.
+   is never cut off. Compact-but-readable type keeps the K (oversight) reveal -
+   the tallest case - comfortably inside the panel.
    ============================================================ */
 .role-reveal{
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	padding: 18px 20px;
+	padding: 13px 18px;
 	border: 3px solid #333;
 	border-radius: 8px;
 	background: #fffdf6;
@@ -584,16 +598,16 @@
 .role-preview-step.done .role-preview-tick{ background: #eef7ef; }
 .role-preview-step.current{ color: #315f7c; font-weight: bold; }
 .role-preview-step.current .role-preview-tick{ background: #eef4f8; }
-.role-reveal h3{ margin: 0 0 8px; font-size: 30px; line-height: 0.98; color: #315f7c; }
-.role-reveal p{ margin: 0 0 8px; font-size: 17px; line-height: 1.15; }
-.role-reveal .role-outcome-line{ margin: 0 0 8px; font-size: 17px; line-height: 1.15; }
+.role-reveal h3{ margin: 0 0 6px; font-size: 28px; line-height: 0.98; color: #315f7c; }
+.role-reveal p{ margin: 0 0 6px; font-size: 16px; line-height: 1.14; }
+.role-reveal .role-outcome-line{ margin: 0 0 6px; font-size: 16px; line-height: 1.14; }
 .role-placeholder{ margin: auto 0; text-align: center; font-size: 22px; line-height: 1.14; color: #777; }
 /* the "play first, name later" payoff */
-.role-policy-reveal{ margin: 0 0 10px; padding: 10px 0; border-top: 2px dashed #d8bf92; border-bottom: 2px dashed #d8bf92; }
+.role-policy-reveal{ margin: 0 0 7px; padding: 7px 0; border-top: 2px dashed #d8bf92; border-bottom: 2px dashed #d8bf92; }
 .role-policy-kicker{ display: block; font-size: 13px; color: #7a3f18; }
-.role-reveal .role-policy-reveal b{ display: block; margin: 2px 0 5px; font-size: 24px; line-height: 1; color: #315f7c; }
-.role-reveal .role-policy-reveal p{ margin: 0; font-size: 15.5px; line-height: 1.15; color: #444; }
-.role-reveal .role-vietnam{ margin: 0 0 8px; font-size: 15.5px; line-height: 1.15; color: #7a3f18; }
+.role-reveal .role-policy-reveal b{ display: block; margin: 2px 0 4px; font-size: 22px; line-height: 1.0; color: #315f7c; }
+.role-reveal .role-policy-reveal p{ margin: 0; font-size: 15px; line-height: 1.14; color: #444; }
+.role-reveal .role-vietnam{ margin: 0 0 7px; font-size: 15px; line-height: 1.14; color: #7a3f18; }
 
 /* ---- Equilibrium Lab: world button, verdict, world chips, room meter ---- */
 .role-knobs-head{
@@ -604,7 +618,7 @@
 	margin-bottom: 2px;
 }
 .role-knobs-head .role-knobs-title{ margin: 0; }
-/* secondary "lab" action — a small text link beside the world knobs, NOT a
+/* secondary "lab" action - a small text link beside the world knobs, NOT a
    second prominent retry button (the primary retry lives in the result panel) */
 .role-world-button{
 	font-family: 'FuturaHandwritten';
@@ -621,7 +635,7 @@
 }
 .role-world-button:hover{ color: #a9572a; }
 
-.role-eq-verdict{ font-size: 15px; line-height: 1.15; margin: 0 0 8px; color: #444; }
+.role-eq-verdict{ font-size: 14px; line-height: 1.14; margin: 0 0 6px; color: #444; }
 .role-eq-verdict b{ color: #315f7c; }
 .role-eq-separating b{ color: #2f6d3a; }
 .role-eq-pooling b{ color: #7a3f18; }
@@ -638,7 +652,7 @@
 	padding: 3px 7px;
 }
 
-.role-room{ margin: 0 0 9px; }
+.role-room{ margin: 0 0 6px; }
 .role-room-head{
 	display: flex;
 	justify-content: space-between;
@@ -741,9 +755,9 @@
 .role-oversight-sequence{
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 5px;
 	max-width: 384px;
-	margin: 8px auto 0;
+	margin: 2px auto 0;
 }
 .role-oversight-steps{
 	display: flex;
@@ -756,16 +770,16 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 4px;
-	min-height: 58px;
-	padding: 7px 6px;
+	gap: 3px;
+	min-height: 44px;
+	padding: 5px 6px;
 	border: 2px solid #bbb;
 	border-radius: 8px;
 	background: #fff;
 	color: #777;
 	text-align: center;
 }
-/* the U.S. "keep enforcing" heading — compact but clearly the lead-in to the steps */
+/* the U.S. "keep enforcing" heading - compact but clearly the lead-in to the steps */
 .role-decision-build h3{ font-size: 28px; margin: 0 0 5px; }
 .role-decision-build .role-observed{ margin: 0 0 8px; font-size: 17px; }
 .role-oversight-step.current{
@@ -795,9 +809,9 @@
 }
 .role-oversight-button{
 	align-self: center;
-	margin-top: 8px;
-	font-size: 23px;
-	padding: 9px 18px;
+	margin-top: 3px;
+	font-size: 22px;
+	padding: 7px 18px;
 }
 .role-oversight-copy{
 	margin: 6px 0 0;
@@ -861,10 +875,17 @@
 	color: #7a3f18;
 }
 
+/* ============================================================
+   Governance debrief - "Signals shape the game"
+   Lesson tabs (left) drive one structured explanation panel (right),
+   read through the player's previous run.
+   ============================================================ */
 .ending-page{
 	width: 100%;
 	height: 100%;
-	padding: 42px 58px;
+	display: flex;
+	flex-direction: column;
+	padding: 26px 54px 24px;
 	background: #fff;
 }
 .ending-header{
@@ -872,90 +893,128 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 28px;
-	margin-bottom: 34px;
+	margin-bottom: 10px;
 }
+.ending-title{ max-width: 660px; }
 .ending-header h2{
-	margin: 0 0 8px;
+	margin: 0 0 6px;
 	font-size: 42px;
 	line-height: 0.95;
 	color: #315f7c;
 }
-.ending-header p{
-	max-width: 650px;
+.ending-sub{
 	margin: 0;
-	font-size: 21px;
-	line-height: 1.15;
+	font-size: 20px;
+	line-height: 1.18;
+	color: #444;
 }
-.ending-body{
-	display: grid;
-	grid-template-columns: 1fr 330px;
-	gap: 34px;
-	align-items: stretch;
-	height: 300px;
-}
-.ending-tiles{
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 18px;
-}
-.ending-tile{
+/* nav: next primary, roles secondary */
+.ending-actions{ display: flex; align-items: flex-start; gap: 10px; flex: 0 0 auto; }
+.ending-next, .ending-back{
 	font-family: 'FuturaHandwritten';
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	padding: 18px;
 	border: 3px solid #333;
 	border-radius: 8px;
+	cursor: pointer;
+	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+.ending-next{ background: #fff8df; color: #222; font-size: 24px; padding: 9px 24px; box-shadow: 0 5px 0 rgba(0,0,0,0.16); }
+.ending-back{ background: #fff; color: #555; font-size: 19px; padding: 8px 16px; box-shadow: 0 4px 0 rgba(0,0,0,0.12); }
+.ending-next:hover, .ending-back:hover{ transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,0.12); }
+
+/* run-summary strip: connects the lesson to what the player just did */
+.ending-run{
+	align-self: flex-start;
+	margin: 0 0 16px;
+	padding: 8px 16px;
+	border: 2px solid #7a3f18;
+	border-left-width: 6px;
+	border-radius: 6px;
+	background: #fff8df;
+	color: #7a3f18;
+	font-size: 17px;
+	line-height: 1.15;
+}
+
+.ending-body{
+	display: grid;
+	grid-template-columns: 312px 1fr;
+	gap: 24px;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+/* left: the 4 lessons grouped as one tab block */
+.ending-tabs{
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 12px;
+	border: 2px solid #e0d3b2;
+	border-radius: 12px;
+	background: #fcf8ee;
+}
+.ending-tab{
+	font-family: 'FuturaHandwritten';
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 13px;
+	padding: 11px 14px;
+	border: 2px solid #cdbf9c;
+	border-radius: 9px;
 	background: #fff;
 	color: #222;
 	text-align: left;
 	cursor: pointer;
-	box-shadow: 0 5px 0 rgba(0,0,0,0.13);
+	transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.12s, border-color 0.12s;
 }
-.ending-tile.selected{
-	background: #fff8df;
+.ending-tab:hover{ transform: translateY(-1px); }
+.ending-tab-num{
+	flex: 0 0 auto;
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 34px; height: 34px;
+	border: 2px solid #9fb6c6; border-radius: 50%;
+	color: #5f7d92; font-size: 18px; line-height: 1;
 }
-.ending-tile span{
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex: 0 0 42px;
-	width: 42px;
-	height: 42px;
-	border: 3px solid #315f7c;
-	border-radius: 50%;
-	color: #315f7c;
-	font-size: 25px;
-	line-height: 1;
+.ending-tab-text b{ display: block; font-size: 19px; line-height: 1.05; color: #315f7c; }
+/* strong selected state: warm fill, dark heavier border, lifted */
+.ending-tab.selected{
+	background: #fff2c4;
+	border-color: #333;
+	border-width: 3px;
+	padding: 10px 13px;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.15);
 }
-.ending-tile b{
-	font-size: 24px;
-	line-height: 1;
-	color: #315f7c;
-}
-.ending-card{
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: 24px;
-	border: 3px solid #333;
-	border-radius: 8px;
-	background: #fffdf6;
-}
-.ending-card h3{
-	margin: 0 0 18px;
-	font-size: 32px;
-	line-height: 0.98;
-	color: #315f7c;
-}
-.ending-card p{
-	margin: 0;
-	font-size: 23px;
-	line-height: 1.14;
+.ending-tab.selected .ending-tab-num{ border-color: #7a3f18; color: #7a3f18; }
+.ending-tab-flag{
+	position: absolute; top: -9px; right: 10px;
+	padding: 1px 7px;
+	border: 1px solid #7a3f18; border-radius: 4px; background: #fbe6b0;
+	font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: #7a3f18;
 }
 
+/* right: structured explanation panel */
+.ending-panel{
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding: 22px 26px;
+	border: 3px solid #333;
+	border-radius: 12px;
+	background: #fffdf6;
+	box-shadow: 0 5px 0 rgba(0,0,0,0.10);
+}
+.ending-panel .role-small-label{ margin: 0 0 6px; font-size: 16px; color: #777; }
+.ending-panel h3{ margin: 0 0 16px; font-size: 30px; line-height: 0.98; color: #315f7c; }
+.ending-section{ margin-bottom: 16px; }
+.ending-section:last-child{ margin-bottom: 0; }
+.ending-section-label{
+	margin: 0 0 4px;
+	font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: #7a3f18;
+}
+.ending-section-text{ margin: 0; font-size: 19px; line-height: 1.24; color: #333; }
+
 /* ============================================================
-   Vietnam — downstream audience "strategic response board"
+   Vietnam - downstream audience "strategic response board"
    (SignalingVietnamHedge). Reuses the paper/serif identity:
    ivory backgrounds, dark outline borders, muted blue titles,
    brown labels & arrows.
@@ -1058,7 +1117,7 @@
 	text-align: center;
 }
 
-/* zone 1 — observed signal chips */
+/* zone 1 - observed signal chips */
 .vh-obs-stack{
 	display: flex;
 	flex-direction: column;
@@ -1073,7 +1132,7 @@
 	color: #6b5d3f;
 }
 
-/* zone 2 — strategic pressure meters */
+/* zone 2 - strategic pressure meters */
 .vh-meters{
 	display: flex;
 	flex-direction: column;
@@ -1105,7 +1164,7 @@
 .vh-meter.active .vh-meter-name{ color: #315f7c; font-weight: bold; }
 .vh-meter.active .vh-meter-track{ border-color: #315f7c; }
 
-/* zone 3 — Vietnam's response levers */
+/* zone 3 - Vietnam's response levers */
 .vh-levers{
 	display: flex;
 	flex-direction: column;
@@ -1324,7 +1383,7 @@
 }
 
 /* ============================================================
-   Vietnam — 3-scene interactive flow
+   Vietnam - 3-scene interactive flow
    (1 observe · 2 build · 3 consequence)
    Reuses the parchment vh-* identity: page/bg/header/meters/chips/mini.
    ============================================================ */
@@ -1364,7 +1423,32 @@
 	background: #fff8df;
 	font-size: 16px; line-height: 1.15; color: #7a3f18;
 }
-.vo-meters{ display: grid; grid-template-columns: 1fr 1fr; gap: 11px 28px; margin-top: 8px; }
+.vo-meters{ display: grid; grid-template-columns: 1fr 1fr; gap: 9px 28px; margin-top: 6px; }
+
+/* scene 1: event strip emphasis + spillover cue + agency bridge */
+.vo-event{
+	margin: 0 0 8px;
+	font-weight: bold;
+	background: #fdeecb;
+	box-shadow: 0 2px 0 rgba(122,63,24,0.12);
+}
+.vo-spillover{
+	display: flex; align-items: center; justify-content: center;
+	gap: 12px; margin: 0 0 8px;
+}
+.vo-spillover-line{
+	height: 0; width: 70px;
+	border-top: 1.5px dashed #cbb98a;
+}
+.vo-spillover-tag{
+	font-size: 13px; font-style: italic; letter-spacing: 0.05em;
+	color: #9a7d3f; white-space: nowrap;
+}
+.vo-bridge{
+	margin: 14px auto 0; max-width: 560px;
+	text-align: center; white-space: pre-line;
+	font-size: 17px; line-height: 1.25; color: #315f7c;
+}
 
 /* ---- scene 2: build ---- */
 .vb-grid{
@@ -1409,20 +1493,40 @@
 .vb-card-chips{ display: flex; flex-wrap: wrap; gap: 6px; }
 .vb-card-cost{ font-size: 13px; color: #8a6d1f; margin-left: auto; }
 
-.vb-rail{ display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+/* the selected-strategy console: tray + capacity + simulate grouped as one panel */
+.vb-rail{
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-height: 0;
+	padding: 13px;
+	border: 2px solid #d8c9a6;
+	border-radius: 10px;
+	background: #fffdf6;
+}
+/* chips stack vertically so two wide moves always fit cleanly inside the
+   dashed box and never spill onto the helper text below it */
 .vb-tray{
-	display: flex; flex-wrap: wrap; align-content: flex-start; gap: 7px;
-	min-height: 46px;
+	display: flex; flex-direction: column; align-items: stretch; gap: 7px;
+	min-height: 84px;
 	padding: 9px;
 	border: 2px dashed #c9b48a; border-radius: 8px; background: #fffdf6;
 }
 .vb-tray-empty{ margin: 0; font-size: 14px; color: #999; font-style: italic; }
 .vb-tray-chip{
-	font-size: 14px; padding: 6px 11px; border-radius: 12px;
+	font-size: 14px; padding: 6px 11px; border-radius: 12px; text-align: center;
 	border: 1px solid #315f7c; background: #e9f1f6; color: #245067;
 }
-.vb-warn{ margin: 0; font-size: 13px; color: #a3531f; }
-.vb-rail .vh-cta{ margin-top: auto; font-size: 21px; padding: 10px 18px; }
+/* helper / over-pick hint: sits in normal flow below the dashed box */
+.vb-warn{ margin: 0; font-size: 13px; line-height: 1.18; color: #a3531f; }
+/* button follows the capacity note in normal flow (no margin-top:auto gap) */
+.vb-rail .vh-cta{ margin-top: 4px; width: 100%; font-size: 20px; padding: 10px 18px; }
+/* the capacity meter is a row-width (176px) item in scene 3; inside this vertical
+   rail that basis would force a 176px-tall block, so reset it to natural height */
+.vb-rail .vh-mini{ flex: 0 0 auto; }
+/* let the console hug its content instead of stretching to the cards' height,
+   so the capacity bar stays near the selected chips and no gap opens up */
+.vb-rail{ align-self: start; }
 
 /* ---- scene 3: consequence ---- */
 .vc-stats{ display: flex; gap: 16px; margin: 2px 0 12px; }
@@ -1434,9 +1538,257 @@
 	position: relative; height: 14px;
 	border: 2px solid #333; border-radius: 6px; background: #fff; overflow: hidden;
 }
-.vc-ghost{ position: absolute; top: 0; left: 0; height: 100%; background: #e6d9bf; }
-.vc-fill{ position: absolute; top: 0; left: 0; height: 100%; background: #5d8a4c; transition: width 0.5s ease-out; }
+/* before = faint ghost, after = solid bar on top (clear contrast) */
+.vc-ghost{ position: absolute; top: 0; left: 0; height: 100%; background: #f1ebdb; }
+.vc-fill{ position: absolute; top: 0; left: 0; height: 100%; background: #4f8a3d; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.10); transition: width 0.5s ease-out; }
 .vc-fill.up{ background: #d98a3c; }
 .vc-summary-chips{ display: flex; flex-wrap: wrap; gap: 9px; margin: 13px 0 9px; }
 .vc-summary-chips .vh-chip{ font-size: 14px; padding: 5px 11px; }
 .vc-narrative{ margin: 0; font-size: 16px; line-height: 1.24; color: #444; }
+
+/* ============================================================
+   Typology scene - "Why some signals are harder to fake"
+   The Quek 2x2 as hand-drawn cards + a game-mapping chip strip.
+   Transparent page so the triangle field shows through the gaps.
+   ============================================================ */
+.signaling_typology{
+	font-family: 'FuturaHandwritten';
+	color: #333;
+	background: transparent;
+	overflow: hidden;
+}
+.signaling_typology *{ box-sizing: border-box; }
+.ty-page{
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 16px;
+	padding: 20px 72px;
+}
+.ty-head{ text-align: center; }
+.ty-title{ margin: 0 0 6px; font-size: 33px; line-height: 0.98; color: #315f7c; }
+.ty-sub{ margin: 0; font-size: 18px; line-height: 1.18; color: #555; }
+
+/* the 2x2 matrix: row-label column + two cost columns */
+.ty-matrix{
+	display: grid;
+	grid-template-columns: 96px 1fr 1fr;
+	gap: 12px 20px;
+	align-items: stretch;
+}
+.ty-corner{
+	align-self: end;
+	padding-bottom: 6px;
+	text-align: center;
+	font-size: 14px;
+	color: #999;
+}
+.ty-colhead{
+	align-self: end;
+	padding-bottom: 6px;
+	text-align: center;
+	font-size: 21px;
+	color: #315f7c;
+}
+.ty-rowhead{
+	display: flex; align-items: center; justify-content: center;
+	font-size: 23px;
+	color: #7a3f18;
+}
+.ty-card{
+	border: 2px solid #333;
+	border-radius: 10px;
+	background: #fffdf6;
+	padding: 12px 16px;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+}
+.ty-card-title{ display: block; margin-bottom: 4px; font-size: 20px; line-height: 1.05; color: #315f7c; }
+.ty-card-desc{ margin: 0; font-size: 15.5px; line-height: 1.18; color: #333; }
+
+/* game mapping: prime the next "Pick your move" choice */
+.ty-map{ }
+.ty-map-label{
+	margin: 0 0 8px;
+	text-align: center;
+	font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: #7a3f18;
+}
+.ty-chips{ display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.ty-chip{
+	display: flex; align-items: center; gap: 8px;
+	padding: 7px 14px;
+	border: 2px solid #cdbf9c; border-radius: 999px; background: #fcf8ee;
+}
+.ty-chip-move{ font-size: 16px; color: #315f7c; }
+.ty-chip-arrow{ font-size: 16px; color: #b08a52; }
+.ty-chip-tags{ display: flex; gap: 5px; }
+.ty-tag{
+	font-size: 13px; padding: 3px 9px; border-radius: 11px;
+	border: 1px solid #d8c08a; background: #fff2c4; color: #7a3f18; white-space: nowrap;
+}
+
+/* CTA: visually part of the mapping block */
+.ty-cta-row{ display: flex; justify-content: center; }
+.ty-cta{
+	font-family: 'FuturaHandwritten';
+	border: 3px solid #333; border-radius: 10px;
+	background: #fff8df; color: #222;
+	font-size: 23px; padding: 10px 28px; cursor: pointer;
+	box-shadow: 0 5px 0 rgba(0,0,0,0.16);
+	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+.ty-cta:hover{ transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,0.13); }
+
+/* ============================================================
+   Actors orientation scene - "Three actors, one compute game"
+   3 actor cards + a flow strip + the credibility/control twist.
+   Transparent page so the triangle field shows through.
+   ============================================================ */
+.signaling_actors{
+	font-family: 'FuturaHandwritten';
+	color: #333;
+	background: transparent;
+	overflow: hidden;
+}
+.signaling_actors *{ box-sizing: border-box; }
+.ac-page{
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 18px;
+	padding: 18px 60px;
+}
+.ac-head{ text-align: center; }
+.ac-title{ margin: 0 0 6px; font-size: 34px; line-height: 0.98; color: #315f7c; }
+.ac-sub{ margin: 0 auto; max-width: 760px; font-size: 18px; line-height: 1.18; color: #555; }
+
+/* 3 actor cards in a row */
+.ac-cards{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+.ac-card{
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	padding: 14px 16px;
+	border: 2px solid #333;
+	border-radius: 10px;
+	background: #fffdf6;
+	box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+}
+.ac-card-name{ margin: 0; font-size: 25px; line-height: 1; color: #315f7c; }
+.ac-card-role{
+	margin: 0 0 2px;
+	font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: #7a3f18;
+}
+.ac-card-copy{ margin: 0; font-size: 15.5px; line-height: 1.2; color: #333; }
+
+/* flow strip: U.S. sends signal -> China updates -> Vietnam adjusts downstream */
+.ac-flow{ display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.ac-flow-node{
+	padding: 6px 14px;
+	border: 2px solid #cdbf9c; border-radius: 999px; background: #fcf8ee;
+	font-size: 16px; color: #315f7c;
+}
+.ac-flow-arrow{ font-size: 18px; color: #b08a52; }
+
+/* twist callout */
+.ac-twist{
+	align-self: center;
+	text-align: center;
+	padding: 9px 22px;
+	border: 2px solid #7a3f18; border-left-width: 6px; border-radius: 8px;
+	background: #fff8df;
+}
+.ac-twist-main{ margin: 0 0 3px; font-size: 19px; color: #7a3f18; }
+.ac-twist-sub{ margin: 0; font-size: 15px; line-height: 1.16; color: #8a6a3a; }
+
+/* CTA */
+.ac-cta-row{ display: flex; justify-content: center; }
+.ac-cta{
+	font-family: 'FuturaHandwritten';
+	border: 3px solid #333; border-radius: 10px;
+	background: #fff8df; color: #222;
+	font-size: 23px; padding: 10px 30px; cursor: pointer;
+	box-shadow: 0 5px 0 rgba(0,0,0,0.16);
+	transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+.ac-cta:hover{ transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,0.13); }
+
+/* ============================================================
+   Interaction-clarity pass: micro-instructions, first-run guide,
+   stronger clickable affordances, labeled adapt line, feedback.
+   ============================================================ */
+
+/* subtle micro-instruction lines (one per playable action area) */
+.role-hint,
+.vh-hint,
+.signal-choice-hint{
+	font-family: 'FuturaHandwritten';
+	font-style: italic;
+	color: #9a7d3f;
+}
+.signal-choice-hint{ margin: 0 0 14px; font-size: 18px; text-align: center; }
+.role-hint{ margin: 0 0 8px; font-size: 15px; text-align: center; line-height: 1.1; }
+.role-oversight-hint{ margin: 0 auto 4px; max-width: 340px; }
+.vh-hint{ margin: 2px 0 10px; font-size: 15px; }
+
+/* first-run guide strip on the "Pick your move" slide */
+.play-steps{
+	display: flex; align-items: center; justify-content: center;
+	flex-wrap: wrap; gap: 6px; margin: 0 auto 12px;
+}
+.play-step{
+	display: inline-flex; align-items: center; gap: 7px;
+	padding: 5px 12px;
+	border: 2px solid #d8c79a; border-radius: 999px;
+	background: #fffdf6; color: #9a8a63;
+	font-size: 15px; line-height: 1;
+}
+.play-step-num{
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 18px; height: 18px;
+	border-radius: 50%; background: #e7d9ad; color: #6b5a2c;
+	font-size: 12px;
+}
+.play-step.current{
+	border-color: #315f7c; background: #eef6fb; color: #315f7c;
+}
+.play-step.current .play-step-num{ background: #315f7c; color: #fff; }
+.play-step-arrow{ color: #c3b485; font-size: 15px; }
+
+/* stronger, still-handmade hover/selected states */
+.role-card:hover{ background: #fff4c7; transform: translateY(-4px) rotate(-0.3deg); box-shadow: 0 9px 0 rgba(0,0,0,0.14); }
+.role-switch-btn{ position: relative; }
+.role-switch-btn:hover{ background: #fff4c7; transform: translateY(-3px) rotate(-0.3deg); box-shadow: 0 7px 0 rgba(0,0,0,0.12); }
+.role-switch-btn.active{ background: #fff2c4; border-color: #315f7c; box-shadow: 0 4px 0 rgba(49,95,124,0.28); }
+.role-switch-badge{
+	display: inline-block; margin-top: 5px;
+	padding: 1px 8px; border-radius: 999px;
+	background: #315f7c; color: #fff;
+	font-size: 11px; line-height: 1.4;
+}
+.vb-card:hover{ background: #fffbe8; transform: translateY(-3px) rotate(-0.2deg); box-shadow: 0 6px 0 rgba(0,0,0,0.14); }
+
+/* labeled "adapt line" tick under the belief bar */
+.role-adaptline{ position: relative; height: 16px; max-width: 360px; margin: 3px auto 0; }
+.role-adaptline-tag{
+	position: absolute; top: 0; transform: translateX(-50%);
+	white-space: nowrap;
+	font-size: 12px; line-height: 1; color: #333;
+}
+
+/* crossing cue: warm when crossed, blue when below */
+.role-verdict.crossed{ color: #a23b2c; font-weight: bold; }
+.role-verdict.below{ color: #315f7c; font-weight: bold; }
+
+/* short "what changed" feedback lines */
+.role-room-why{
+	margin: 6px 0 0; font-size: 13px; line-height: 1.18;
+	font-style: italic; color: #8a6d1f;
+}
+.vb-feedback{
+	margin: 8px 0 0; font-size: 13px; line-height: 1.2;
+	font-style: italic; color: #8a6d1f;
+}
