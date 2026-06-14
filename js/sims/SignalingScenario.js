@@ -371,7 +371,7 @@ function SignalingRoleChoice(config){
     choices.appendChild(us);
     choices.appendChild(china);
     page.appendChild(choices);
-    page.appendChild(el("p", "role-note", "First play the U.S.-China signal game. Vietnam responds downstream later."));
+    page.appendChild(el("p", "role-note", "Pick a role for the U.S.-China round. Vietnam responds downstream after the signal is played."));
     self.dom.appendChild(page);
   };
 
