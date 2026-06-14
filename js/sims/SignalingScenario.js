@@ -1136,7 +1136,7 @@ function SignalingRoleGame(config){
     var steps = oversightSteps();
     var wrap = el("div", "role-oversight-sequence");
     if(self.state.oversightStep < 3){
-      wrap.appendChild(el("p", "role-hint role-oversight-hint", "Keep enforcing: complete all 3 steps to make slow burn credible."));
+      wrap.appendChild(el("p", "role-hint role-oversight-hint", "These 3 steps are the signal. Keep enforcing through all of them to make slow burn credible."));
     }
     var row = el("div", "role-oversight-steps");
     for(var i=0; i<steps.length; i++){
@@ -1209,7 +1209,9 @@ function SignalingRoleGame(config){
 
     if(self.role === "US"){
       wrap.appendChild(el("h3", "", "Waiting for China"));
-      wrap.appendChild(el("p", "role-preview-body", "China's response will appear once the U.S. move becomes observable."));
+      wrap.appendChild(el("p", "role-preview-body", self.state.signal === "K"
+        ? "Slow burn is sent over 3 rounds. China reacts only after you finish enforcing all of them."
+        : "China's response will appear once the U.S. move becomes observable."));
       if(self.state.signal === "K"){
         var labels = ["Announce policy", "Audit providers", "Enforce repeatedly"];
         var list = el("div", "role-preview-steps");
@@ -1297,12 +1299,18 @@ function SignalingRoleGame(config){
       return;
     }
 
+    // oversight mini-game (U.S. sender chose slow burn, not yet revealed)
+    var building = (self.role === "US" && self.state.signal === "K" && !self.state.revealed);
+
     var page = el("div", "role-game-page");
     var header = el("header", "role-game-header");
     var title = el("div");
     title.appendChild(el("p", "role-eyebrow", self.role === "US" ? "Play as the U.S. Sender" : "Play as China Receiver"));
     title.appendChild(el("h2", "", self.role === "US" ? "Choose a compute signal" : "Respond under uncertainty"));
-    title.appendChild(el("p", "", self.role === "US" ? "You see the U.S. type. China updates and responds automatically." : "Nature hides the U.S. type. You see only the signal and belief."));
+    var subtitle = self.role === "US"
+      ? (building ? "Slow burn is sent over 3 enforcement rounds. China reacts only after you finish all 3." : "You see the U.S. type. China updates and responds automatically.")
+      : "Nature hides the U.S. type. You see only the signal and belief.";
+    title.appendChild(el("p", "", subtitle));
     header.appendChild(title);
     var actions = el("div", "scenario-header-buttons");
     actions.appendChild(button("scenario-reset", "roles", function(){ publish("slideshow/goto", ["signaling_role_choice"]); }));
@@ -1318,10 +1326,11 @@ function SignalingRoleGame(config){
     grid.appendChild(left);
 
     var center = el("div", "role-game-center");
-    var building = (self.role === "US" && self.state.signal === "K" && !self.state.revealed); // oversight mini-game (U.S. sender only)
     if(self.role === "US"){
-      // the "China updates instantly" hint is wrong during the slow-burn build,
-      // where credibility accrues step by step, so hide it then to save space too.
+      // The "China updates instantly" hint is true for costly move / cheap promise.
+      // During the slow-burn build it's wrong (and there's no room for it), so we
+      // hide it; the subtitle, the "Waiting for China" panel, and the step hint
+      // just above the buttons already explain that the 3 steps are the move.
       if(!building) center.appendChild(el("p", "role-hint", "Click a signal. China updates instantly."));
       center.appendChild(renderSignalSwitch());
     }
